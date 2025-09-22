@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -18,11 +18,20 @@
     "connect-mongo": "^5.1.0",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
-    "express-session": "^1.18.2"
+    "express-mongo-sanitize": "^2.2.0",
+    "express-session": "^1.18.2",
+    "helmet": "^8.1.0",
+    "mongoose": "^8.18.1",
+    "nodemailer": "^7.0.6",
+    "passport": "^0.7.0",
+    "passport-github2": "^0.1.12",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-kakao": "^1.0.1"
   },
   "devDependencies": {
     "eslint": "^9.35.0",
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2"
-  }
+  },
+  "type": "module"
 }
