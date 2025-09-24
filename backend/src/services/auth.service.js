@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import User from "../models/user.model.js";
 import PasswordReset from "../models/passwordReset.model.js";
-import { sendMail} from "../utils/mail.service.js";
+import { sendEmail } from "../utils/mail.service.js";
 
 export const register = async (id, nickname, password, email) => {
         const existingUser = await User.findOne({ $or: [{ id }, { nickname }, {email}] });
@@ -33,7 +33,7 @@ export const findIdByEmail = async(email) => {
         const user = await User.findOne({ email });
         if(!user) throw new Error("No user found with this email");
 
-        await sendMail({
+        await sendEmail({
                 to: email,
                 subject: "Your User ID",
                 text: `Your user ID is: ${user.id}`,
@@ -57,7 +57,7 @@ export const createPasswordResetToken = async(id, email) => {
 
         const resetUrl = `${process.env.RESET_PASSWORD_URL}/${token}`;
 
-        await sendMail({
+        await sendEmail({
                 to: email,
                 subject: "Password Reset Request",
                 text: `You requested a password reset. Click the link to reset your password: ${resetUrl}`,
