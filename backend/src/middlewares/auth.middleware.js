@@ -1,5 +1,5 @@
 import Joi from "joi";
-import router from "../routes";
+import router from "../routes/index.js";
 
 const registerSchema = Joi.object({
         id : Joi.string().alphanum().min(3).max(30).required(),
@@ -27,18 +27,19 @@ export const errorHandler = (err, req, res, next) => {
   res.status(err.status || 500).json({ message: err.message || '서버 내부 오류 발생' });
 };
 
-app.use((req, res, next) => {
-        if(req.session){
-                if(!req.session.lastAccess){
-                        req.session.lastAccess = Date.now();
-                } else if(Date.now() - req.session.lastAccess > 30 * 60 * 1000) { // 30분
-                        req.session.destroy(() => {
-                                return res.status(440).json({ message: "Session expired" });
-                        });
-                        return;
-                } else {
-                        req.session.lastAccess = Date.now();
-                }
-        }
-        next(); 
-});
+
+export const sessionTimeout = (req, res, next) => {
+  if(req.session){
+    if(!req.session.lastAccess){
+      req.session.lastAccess = Date.now();
+    } else if(Date.now() - req.session.lastAccess > 30 * 60 * 1000) {
+      req.session.destroy(() => {
+        return res.status(440).json({ message: "Session expired" });
+      });
+      return;
+    } else {
+      req.session.lastAccess = Date.now();
+    }
+  }
+  next();
+};
