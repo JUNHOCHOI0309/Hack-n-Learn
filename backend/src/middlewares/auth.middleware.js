@@ -22,6 +22,17 @@ export const requireLogin = (req, res, next) => {
         next();
 };
 
+export const requireAdmin = (req, res, next) => {
+    if(!req.session.userId){
+        return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    if(req.session.role !== 'admin'){
+        return res.status(403).json({ message: "Access forbidden: Admins only" });
+    }
+    next();
+};
+
 export const errorHandler = (err, req, res, next) => {
   console.error(err.stack);
   res.status(err.status || 500).json({ message: err.message || '서버 내부 오류 발생' });
