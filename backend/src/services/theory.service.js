@@ -14,27 +14,25 @@ export const listTechniques = async () => {
     .lean();
 };
 
-/**
- * 특정 technique 의 모든 level 리스트 조회 (정렬: order 오름차순)
- * techniqueId : string (ObjectId or slug)
- */
-export const listLevelsByTechnique = async (techniqueId) => {
-  // techniqueId가 ObjectId인지 slug인지 판별
+/** 특정 기법 상세 + 연결된 레벨 목록 */
+export const getTechniqueWithLevels = async (techniqueId) => {
   let technique;
   if (mongoose.Types.ObjectId.isValid(techniqueId)) {
-    technique = await Technique.findById(techniqueId).select("_id title slug description").lean();
+    technique = await Technique.findById(techniqueId).lean();
   } else {
-    technique = await Technique.findOne({ slug: techniqueId }).select("_id title slug description").lean();
+    technique = await Technique.findOne({ slug: techniqueId }).lean();
   }
-  if (!technique) return null;
+
+  if(!technique) return null;
 
   const levels = await TechniqueLevel.find({ techniqueId: technique._id })
     .sort({ order: 1 })
-    .select("order name") // 목록에 필요한 최소 필드
+    .select("_id order description")
     .lean();
 
-  return { technique, levels };
-};
+  return { ...technique, levels };
+}
+
 
 /**
  * 특정 레벨의 상세 정보 조회
@@ -45,9 +43,9 @@ export const getLevelDetail = async (techniqueId, levelId) => {
   // 먼저 technique 존재 여부 확인 (보안/유효성)
   let technique;
   if (mongoose.Types.ObjectId.isValid(techniqueId)) {
-    technique = await Technique.findById(techniqueId).select("_id title slug").lean();
+    technique = await Technique.findById(techniqueId).select("_id title").lean();
   } else {
-    technique = await Technique.findOne({ slug: techniqueId }).select("_id title slug").lean();
+    technique = await Technique.findOne({ slug: techniqueId }).select("_id title").lean();
   }
   if (!technique) return { notFound: true };
 
@@ -57,7 +55,7 @@ export const getLevelDetail = async (techniqueId, levelId) => {
   }
 
   const level = await TechniqueLevel.findOne({ _id: levelId, techniqueId: technique._id })
-    .select("order name description theory exampleCode defense imageUrl warning createdAt updatedAt")
+    .select("_id order description exampleCode createdAt updatedAt")
     .lean();
 
   if (!level) return { notFound: true };

@@ -1,6 +1,6 @@
 // 이론 학습 관련 라우트
 import express from "express";
-import { listTechniques, listLevels, getLevelDetail } from "../controllers/theory.controller.js";
+import { listTechniques, getTechniqueWithLevels, getLevelDetail } from "../controllers/theory.controller.js";
 import { postGenerateQuiz, getQuizzesByLevel, postAnswerQuiz, getWrongNotes } from "../controllers/quiz.controller.js";
 import { requireLogin } from "../middlewares/auth.middleware.js";
 
@@ -12,7 +12,7 @@ router.get("/techniques", requireLogin, listTechniques);
 
 // 카테고리별 레벨 목록 조회 (Form 선택용)
 // GET /api/theory/techniques/:techniqueId/levels
-router.get("/techniques/:techniqueId/levels", requireLogin, listLevels);
+router.get("/techniques/:techniqueId", requireLogin, getTechniqueWithLevels);
 
 // 레벨별 상세 이론 조회
 // GET /api/theory/techniques/:techniqueId/levels/:levelId
@@ -35,22 +35,23 @@ router.post("/quiz/:quizId/answer", requireLogin, postAnswerQuiz);
 // 오답노트 조회 (필터: techniqueId, levelId)
 // GET /api/theory/quiz/:quizId/wrong-notes
 router.get("/quiz/:quizId/wrong-notes", requireLogin, getWrongNotes);
+
 /**
  * @swagger
  * tags:
  *   name: Theory
- *   description: 공격 기법 이론 학습 API
+ *   description: 이론 학습(공격 기법) 관련 API
  */
 
 /**
  * @swagger
  * /api/theory/techniques:
  *   get:
- *     summary: 카테고리(Technique) 목록 조회
+ *     summary: 모든 기법 목록 조회
  *     tags: [Theory]
  *     responses:
  *       200:
- *         description: 카테고리 목록 반환
+ *         description: 기법 목록 반환
  *         content:
  *           application/json:
  *             schema:
@@ -62,14 +63,14 @@ router.get("/quiz/:quizId/wrong-notes", requireLogin, getWrongNotes);
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Technique'
+ *                     $ref: '#/components/schemas/TechniqueListItem'
  */
 
 /**
  * @swagger
- * /api/theory/techniques/{techniqueId}/levels:
+ * /api/theory/techniques/{techniqueId}:
  *   get:
- *     summary: 특정 Technique의 레벨 목록 조회
+ *     summary: 특정 기법 상세 + 레벨 목록 조회
  *     tags: [Theory]
  *     parameters:
  *       - in: path
@@ -77,10 +78,10 @@ router.get("/quiz/:quizId/wrong-notes", requireLogin, getWrongNotes);
  *         required: true
  *         schema:
  *           type: string
- *         description: Technique ID 또는 slug
+ *         description: 기법 ID
  *     responses:
  *       200:
- *         description: Technique 정보와 레벨 목록 반환
+ *         description: 특정 기법과 그에 속한 레벨 목록 반환
  *         content:
  *           application/json:
  *             schema:
@@ -93,20 +94,20 @@ router.get("/quiz/:quizId/wrong-notes", requireLogin, getWrongNotes);
  *                   type: object
  *                   properties:
  *                     technique:
- *                       $ref: '#/components/schemas/TechniqueBasic'
+ *                       $ref: '#/components/schemas/TechniqueDetail'
  *                     levels:
  *                       type: array
  *                       items:
  *                         $ref: '#/components/schemas/LevelSummary'
  *       404:
- *         description: Technique를 찾을 수 없음
+ *         description: 기법을 찾을 수 없음
  */
 
 /**
  * @swagger
  * /api/theory/techniques/{techniqueId}/levels/{levelId}:
  *   get:
- *     summary: 특정 Technique의 특정 Level 상세 조회
+ *     summary: 특정 레벨 상세 조회
  *     tags: [Theory]
  *     parameters:
  *       - in: path
@@ -114,16 +115,16 @@ router.get("/quiz/:quizId/wrong-notes", requireLogin, getWrongNotes);
  *         required: true
  *         schema:
  *           type: string
- *         description: Technique ID 또는 slug
+ *         description: 기법 ID
  *       - in: path
  *         name: levelId
  *         required: true
  *         schema:
  *           type: string
- *         description: Level ID
+ *         description: 레벨 ID
  *     responses:
  *       200:
- *         description: Technique와 Level 상세 정보 반환
+ *         description: 특정 레벨 상세 정보 반환
  *         content:
  *           application/json:
  *             schema:
@@ -140,14 +141,14 @@ router.get("/quiz/:quizId/wrong-notes", requireLogin, getWrongNotes);
  *                     level:
  *                       $ref: '#/components/schemas/LevelDetail'
  *       404:
- *         description: Technique 또는 Level을 찾을 수 없음
+ *         description: 레벨을 찾을 수 없음
  */
 
 /**
  * @swagger
  * components:
  *   schemas:
- *     Technique:
+ *     TechniqueListItem:
  *       type: object
  *       properties:
  *         _id:
@@ -161,15 +162,40 @@ router.get("/quiz/:quizId/wrong-notes", requireLogin, getWrongNotes);
  *           example: "sql-injection"
  *         description:
  *           type: string
- *           example: "데이터베이스 쿼리를 조작하는 공격 기법"
+ *           example: "데이터베이스 쿼리 조작 공격"
  *         createdAt:
  *           type: string
  *           format: date-time
- *           example: "2025-09-26T10:00:00.000Z"
+ *           example: "2025-09-26T10:00:00Z"
  *         updatedAt:
  *           type: string
  *           format: date-time
- *           example: "2025-09-26T10:00:00.000Z"
+ *           example: "2025-09-26T10:00:00Z"
+ *
+ *     TechniqueDetail:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *           example: "65f123abcde7890123456789"
+ *         title:
+ *           type: string
+ *           example: "SQL Injection"
+ *         warning:
+ *           type: string
+ *           example: "[경고] 학습 외 악용 금지"
+ *         imageUrl:
+ *           type: string
+ *           example: "/uploads/sql.png"
+ *         outline:
+ *           type: string
+ *           example: "DB 쿼리 조작 공격"
+ *         description:
+ *           type: string
+ *           example: "SQL Injection은 ..."
+ *         defense:
+ *           type: string
+ *           example: "Prepared Statement 사용"
  *
  *     TechniqueBasic:
  *       type: object
@@ -180,12 +206,6 @@ router.get("/quiz/:quizId/wrong-notes", requireLogin, getWrongNotes);
  *         title:
  *           type: string
  *           example: "SQL Injection"
- *         slug:
- *           type: string
- *           example: "sql-injection"
- *         description:
- *           type: string
- *           example: "데이터베이스 쿼리를 조작하는 공격 기법"
  *
  *     LevelSummary:
  *       type: object
@@ -196,9 +216,9 @@ router.get("/quiz/:quizId/wrong-notes", requireLogin, getWrongNotes);
  *         order:
  *           type: integer
  *           example: 1
- *         name:
+ *         description:
  *           type: string
- *           example: "기초 SQL Injection"
+ *           example: "기초 단계 설명"
  *
  *     LevelDetail:
  *       type: object
@@ -209,35 +229,20 @@ router.get("/quiz/:quizId/wrong-notes", requireLogin, getWrongNotes);
  *         order:
  *           type: integer
  *           example: 1
- *         name:
- *           type: string
- *           example: "기초 SQL Injection"
  *         description:
  *           type: string
- *           example: "WHERE 절 조건 우회를 활용한 공격"
- *         theory:
- *           type: string
- *           example: "SQL Injection은 입력값을 검증하지 않는 경우 발생한다..."
+ *           example: "기초 단계 설명"
  *         exampleCode:
  *           type: string
- *           example: "SELECT * FROM users WHERE id = '1' OR '1'='1';"
- *         defense:
- *           type: string
- *           example: "Prepared Statement와 입력값 검증을 통해 방어"
- *         imageUrl:
- *           type: string
- *           example: "/uploads/sql-injection-basic.png"
- *         warning:
- *           type: string
- *           example: "[경고] 학습 외 악용 금지"
+ *           example: "SELECT * FROM users WHERE id='1' OR '1'='1';"
  *         createdAt:
  *           type: string
  *           format: date-time
- *           example: "2025-09-26T11:00:00.000Z"
+ *           example: "2025-09-26T11:00:00Z"
  *         updatedAt:
  *           type: string
  *           format: date-time
- *           example: "2025-09-26T11:00:00.000Z"
+ *           example: "2025-09-26T11:00:00Z"
  */
 
 /**

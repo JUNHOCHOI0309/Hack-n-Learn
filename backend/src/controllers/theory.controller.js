@@ -1,8 +1,7 @@
-// controllers/theory.controller.js
 import * as theoryService from "../services/theory.service.js";
 
 /**
- * GET /api/techniques
+ * GET /api/theory/techniques
  */
 export const listTechniques = async (req, res, next) => {
   try {
@@ -14,12 +13,12 @@ export const listTechniques = async (req, res, next) => {
 };
 
 /**
- * GET /api/techniques/:techniqueId/levels
+ * GET /api/theory/techniques/:techniqueId
  */
-export const listLevels = async (req, res, next) => {
+export const getTechniqueWithLevels = async (req, res, next) => {
   try {
     const { techniqueId } = req.params;
-    const result = await theoryService.listLevelsByTechnique(techniqueId);
+    const result = await theoryService.getTechniqueWithLevels(techniqueId);
     if (!result) {
       return res.status(404).json({ success: false, message: "데이터가 존재하지 않습니다" });
     }
@@ -30,7 +29,7 @@ export const listLevels = async (req, res, next) => {
 };
 
 /**
- * GET /api/techniques/:techniqueId/levels/:levelId
+ * GET /api/theory/techniques/:techniqueId/levels/:levelId
  */
 export const getLevelDetail = async (req, res, next) => {
   try {
