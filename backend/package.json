@@ -26,6 +26,7 @@
     "helmet": "^8.1.0",
     "joi": "^18.0.1",
     "mongoose": "^8.18.1",
+    "multer-gridfs-storage": "^5.0.2",
     "nodemailer": "^7.0.6",
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
