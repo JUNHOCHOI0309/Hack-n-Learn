@@ -16,21 +16,27 @@ export const validateRegister = (req, res, next) => {
 }
 
 export const requireLogin = (req, res, next) => {
-        if(!req.session.userId) {
-                return res.status(401).json({ message: "Not authenticated" });
-        }
-        next();
+  const user = req.session?.user || null;
+  const userId = req.session?.userId || null;
+  if (!user && !userId) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+  req.user = user || { _id: userId, role: req.session.role };
+  next();
 };
 
 export const requireAdmin = (req, res, next) => {
-    if(!req.session.userId){
-        return res.status(401).json({ message: "Not authenticated" });
-    }
+  const user = req.session?.user || null;
+  const role = req.session?.role || null;
+  if (!user) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
 
-    if(req.session.role !== 'admin'){
-        return res.status(403).json({ message: "Access forbidden: Admins only" });
-    }
-    next();
+  if (role !== 'admin') {
+    return res.status(403).json({ message: "Access forbidden: Admins only" });
+  }
+  req.user = user;
+  next();
 };
 
 export const errorHandler = (err, req, res, next) => {
@@ -54,3 +60,5 @@ export const sessionTimeout = (req, res, next) => {
   }
   next();
 };
+
+export default requireLogin;
