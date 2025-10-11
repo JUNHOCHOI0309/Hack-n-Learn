@@ -8,7 +8,7 @@ import historyRoutes from './history.routes.js';
 import hintsRoutes from './hints.routes.js';
 import rewardsRoutes from './rewards.routes.js';
 import communityRoutes from './community.routes.js';
-import statsRoutes from './stats.routes.js';
+import rankingRoutes from './ranking.routes.js';
 import adminRoutes from './admin.routes.js';
 import mainRoutes from './main.routes.js';
 
@@ -22,12 +22,13 @@ router.use('/mypage', mypageRoutes);
 router.use('/admin', adminRoutes);
 router.use('/community', communityRoutes);
 router.use('/theory', theroryRoutes);
+router.use('/news', newsRoutes);
+router.use('/ranking', rankingRoutes);
+
 router.use('/problems', problemRoutes);
 router.use('/history', historyRoutes);
 router.use('/hints', hintsRoutes);
 router.use('/rewards', rewardsRoutes);
-router.use('/stats', statsRoutes);
 
-router.use('/news', newsRoutes);
 
 export default router;
