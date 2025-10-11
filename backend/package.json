@@ -24,6 +24,7 @@
     "express-session": "^1.18.2",
     "express-validator": "^7.2.1",
     "helmet": "^8.1.0",
+    "iconv-lite": "^0.7.0",
     "joi": "^18.0.1",
     "mongoose": "^8.18.1",
     "multer-gridfs-storage": "^5.0.2",
