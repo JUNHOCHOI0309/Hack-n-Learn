@@ -1,5 +1,5 @@
 //로그인 페이지
-import e, { Router } from "express";
+import { Router } from "express";
 import * as authController from "../controllers/auth.controller.js";
 import { validateRegister } from "../middlewares/auth.middleware.js";
 import * as authService from "../services/auth.service.js";
@@ -32,6 +32,25 @@ router.get("/github/callback", passport.authenticate("github", { failureRedirect
         res.redirect("/api/main");
 });
 
+router.post("/send-verification-code", async (req, res, next) => {
+        try{
+                const { email } = req.body;
+                await authService.sendVerificationCode(email);
+                res.json({ message: "Verification code sent" });
+        } catch (error) {
+                next(error); 
+        }
+});
+
+router.post("/verify-code", async (req, res, next) => {
+        try{
+                const { email, code } = req.body;
+                await authService.verifyEmailCode(email, code);
+                res.json({ message: "Email verified successfully" });
+        } catch (error) {
+                next(error); 
+        }
+});
 
 router.post("/find-id", async (req, res, next)=> { 
         try{
@@ -76,9 +95,9 @@ router.post("/reset-password/:token", async (req, res, next)=> {
 
 /**
  * @swagger
- * /api/auth/login:
+ * /api/auth/send-verify-code:
  *   post:
- *     summary: 사용자 로그인
+ *     summary: 회원가입 시 이메일 인증번호 발송
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -90,29 +109,26 @@ router.post("/reset-password/:token", async (req, res, next)=> {
  *               email:
  *                 type: string
  *                 example: user@example.com
- *               password:
- *                 type: string
- *                 example: "123456"
  *     responses:
  *       200:
- *         description: 로그인 성공
+ *         description: 인증번호 발송 성공
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 token:
+ *                 message:
  *                   type: string
- *                   example: "jwt.token.here"
- *       401:
- *         description: 로그인 실패
+ *                   example: Verification code sent
+ *       400:
+ *         description: 잘못된 이메일 형식 또는 발송 실패
  */
 
 /**
  * @swagger
- * /api/auth/register:
+ * /api/auth/verify-code:
  *   post:
- *     summary: 사용자 회원가입
+ *     summary: 이메일 인증번호 확인
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -123,12 +139,69 @@ router.post("/reset-password/:token", async (req, res, next)=> {
  *             properties:
  *               email:
  *                 type: string
- *                 example: newuser@example.com
+ *                 example: user@example.com
+ *               code:
+ *                 type: string
+ *                 example: "123456"
+ *     responses:
+ *       200:
+ *         description: 이메일 인증 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Email verified
+ *       400:
+ *         description: 인증번호 불일치 또는 만료
+ */
+
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: 회원가입 (이메일 인증 완료 후)
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 example: juho123
+ *               nickname:
+ *                 type: string
+ *                 example: 주호
  *               password:
  *                 type: string
- *                 example: "password123"
+ *                 example: "securepassword"
+ *               email:
+ *                 type: string
+ *                 example: user@example.com
  *     responses:
  *       201:
  *         description: 회원가입 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Signup success
+ *                 userId:
+ *                   type: string
+ *                   example: 66f2e6...
+ *                 nickname:
+ *                   type: string
+ *                   example: 주호
+ *       400:
+ *         description: 이메일 미인증 또는 중복 정보 존재
  */
+
 export default router;

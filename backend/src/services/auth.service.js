@@ -1,17 +1,55 @@
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import User from "../models/user.model.js";
+import EmailVerify from "../models/emailVerify.model.js";
 import PasswordReset from "../models/passwordReset.model.js";
 import { sendEmail } from "../utils/mail.service.js";
+import { send } from "process";
+
+export const sendVerificationCode = async(email) => {
+        const code = String(Math.floor(100000 + Math.random() * 900000));
+        const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
+
+        await EmailVerify.findOneAndUpdate(
+                { email },
+                { verificationCode: code, expiresAt, verified: false },
+                { upsert: true, new: true }
+        );
+
+        await sendEmail({
+                to: email,
+                subject: "Email Verification Code",
+                text: `Your verification code is: ${code}`,
+                html: `<p>Your verification code is: <strong>${code}</strong></p><p>This code will expire in 5 minutes.</p>`
+        });
+
+        return true;
+};
+
+export const verifyEmailCode = async(email, code) => {
+        const record = await EmailVerify.findOne({ email, verificationCode: code });
+        if(!record) throw new Error("Invalid verification code");
+        if(record.expiresAt < Date.now()) throw new Error("Verification code expired");
+
+        record.verified = true;
+        await record.save();
+
+        return true;
+};
 
 export const register = async (id, nickname, password, email) => {
-        const existingUser = await User.findOne({ $or: [{ id }, { nickname }, {email}] });
-        if (existingUser) {
-            throw new Error("id or nickname already in use");
-        }
+        const verified = await EmailVerify.findOne({ email, verified: true });
+        if(!verified) throw new Error("Email not verified");
+
+        const existingUser = await User.findOne({ $or: [ { id }, { nickname }, { email } ] });
+        if(existingUser) throw new Error("ID, nickname or email already in use");
+
         const passwordHash = await bcrypt.hash(password, 10);
         const user = new User({ id, nickname, passwordHash, email });
         await user.save();
+
+        await EmailVerify.deleteOne({ email });
+        
         return user;
 };
 
