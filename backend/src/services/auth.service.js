@@ -41,6 +41,8 @@ export const register = async (id, nickname, password, email) => {
         const verified = await EmailVerify.findOne({ email, verified: true });
         if(!verified) throw new Error("Email not verified");
 
+        if(Date.now() > verified.expiresAt) throw new Error("Verification expired, please verify again");
+
         const existingUser = await User.findOne({ $or: [ { id }, { nickname }, { email } ] });
         if(existingUser) throw new Error("ID, nickname or email already in use");
 

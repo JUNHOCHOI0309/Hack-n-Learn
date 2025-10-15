@@ -15,19 +15,13 @@ router.get("/me" , authController.me); // 현재 로그인한 사용자 정보 �
 router.post("/complete-profile" , authController.completeProfile);
 
 router.get("/google", passport.authenticate("google", { scope: ["profile","email"] }));
-router.get("/google/callback", passport.authenticate("google", { failureRedirect: "/login", failureFlash: true }), (req, res) => {
+router.get("/google/callback", passport.authenticate("google", { failureRedirect: "/login", failureFlash: false }), (req, res) => {
         //res.json({ message: "Google login success", userId: req.user._id, nickname: req.user.nickname, isProfileComplete: req.user.isProfileComplete });
         res.redirect("/api/main");
 });
 
-router.get("/kakao", passport.authenticate("kakao"));
-router.get("/kakao/callback", passport.authenticate("kakao", { failureRedirect: "/login", failureFlash: true}), (req, res) => {
-        //res.json({ message: "Kakao login success", userId: req.user._id, nickname: req.user.nickname , isProfileComplete: req.user.isProfileComplete });
-        res.redirect("/api/main");
-});
-
 router.get("/github", passport.authenticate("github", { scope: ["user:email"] }));
-router.get("/github/callback", passport.authenticate("github", { failureRedirect: "/login", failureFlash: true }), (req, res) => {
+router.get("/github/callback", passport.authenticate("github", { failureRedirect: "/login", failureFlash: false }), (req, res) => {
         //res.json({ message: "GitHub login success", userId: req.user._id, nickname: req.user.nickname , isProfileComplete: req.user.isProfileComplete });
         res.redirect("/api/main");
 });

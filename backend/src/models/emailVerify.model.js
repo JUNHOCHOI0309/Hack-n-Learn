@@ -7,6 +7,8 @@ const emailVerifySchema = new mongoose.Schema({
   verified: { type: Boolean, default: false }
 });
 
+emailVerifySchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
 const EmailVerify = mongoose.model("EmailVerify", emailVerifySchema);
 
 export default EmailVerify;

@@ -1,14 +1,16 @@
 import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
 import routes from "./routes/index.js";
 import session from "express-session";
 import MonogoStore from "connect-mongo";
 import helmet from "helmet";
+import passport from "passport";
 import { swaggerUi, specs } from "./config/swagger.js";
 import expressMongoSanitize from "@exortek/express-mongo-sanitize";
 import { errorHandler } from "./middlewares/auth.middleware.js";
+import { initPassport } from "./config/passport.js";
 
-dotenv.config();
 const app = express();
 
 app.use(helmet());
@@ -36,6 +38,9 @@ app.use(
         })
 );
 
+initPassport();
+// app.use(passport.initialize());
+// app.use(passport.session());
 // app.use(
 //   session({
 //     secret: process.env.SESSION_SECRET || "supersecret",
