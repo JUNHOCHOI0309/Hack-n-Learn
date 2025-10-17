@@ -39,20 +39,18 @@ app.use(
 );
 
 initPassport();
-// app.use(passport.initialize());
-// app.use(passport.session());
-// app.use(
-//   session({
-//     secret: process.env.SESSION_SECRET || "supersecret",
-//     resave: false,
-//     saveUninitialized: false,
-//     cookie: {
-//       httpOnly: true,
-//       secure: false,
-//       maxAge: 1000 * 60 * 60 * 24 // 1일
-//     }
-//   })
-// );
+
+app.get("/lab/:sessionId/:file", async (req, res) => {
+        const { sessionId, file } = req.params;
+
+        const filePath = path.join(process.cwd(), "labs", sessionId, file);
+
+        res.sendFile(filePath, (err) => {
+                if (err) {
+                        res.status(404).send("File not found");
+                }
+        });
+});
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
