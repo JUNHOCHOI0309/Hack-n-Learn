@@ -24,8 +24,8 @@ router.use('/community', communityRoutes);
 router.use('/theory', theroryRoutes);
 router.use('/news', newsRoutes);
 router.use('/ranking', rankingRoutes);
-
 router.use('/problems', problemRoutes);
+
 router.use('/history', historyRoutes);
 router.use('/hints', hintsRoutes);
 router.use('/rewards', rewardsRoutes);
