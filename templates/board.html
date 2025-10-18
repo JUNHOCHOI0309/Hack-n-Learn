@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="card">
-    <!-- 제목 + (자유게시판일 때 오른쪽 글쓰기 버튼, 공지판은 admin만 버튼 표시) -->
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <h2 style="margin:0;">{{ title }}</h2>
         {% if board == 'free' and session.username %}
@@ -15,7 +14,6 @@
         {% endif %}
     </div>
 
-    <!-- 공지일 때만 검색창 노출 -->
     {% if board == 'notice' %}
     <div style="margin:12px 0 0 0;">
         <form method="post" style="display:flex; gap:8px; align-items:center;">
@@ -25,26 +23,45 @@
     </div>
     {% endif %}
 
-    <table class="post-table" style="margin-top:16px;">
+    <table class="post-table" style="margin-top:16px; width:100%;">
         <thead>
             <tr>
-                <th>번 호</th>
+                <th style="width:80px; text-align:left; padding-left:8px;">번 호</th>
                 <th>제 목</th>
-                <th>작 성 자</th>
-                <th>작업</th>
+                <th style="width:200px;">작 성 자</th>
+                <th style="width:160px; text-align:right;">작업</th>
             </tr>
         </thead>
         <tbody>
+        {% set total = posts|length %}
         {% for p in posts %}
             <tr>
-                <td>{{ p.id }}</td>
+                <td class="num-cell">{{ total - loop.index0 }}</td>
                 <td><a href="{{ url_for('post', post_id=p.id) }}">{{ p.title }}</a></td>
-                <td>{{ p.author }}</td>
-                <td>
+
+                <td class="author-cell">
+                    {% if p.author == '관리자' %}
+                        {% set display_author = 'admin' %}
+                    {% else %}
+                        {% set display_author = p.author %}
+                    {% endif %}
+                    {{ display_author }}
+
+                    {% if p.author == 'admin' or p.author == '관리자' %}
+                        <span class="badge badge-admin">관리자</span>
+                    {% elif p.author == 'system' %}
+                        <span class="badge badge-system">시스템</span>
+                    {% else %}
+                        <span class="badge badge-member">일반회원</span>
+                    {% endif %}
+                </td>
+
+                <td class="action-cell">
                     {% if session.username == p.author or session.username == 'admin' %}
                         <form method="post" action="{{ url_for('delete', post_id=p.id) }}" style="display:inline;">
                             <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-                            <button type="submit" onclick="return confirm('정말 삭제하시겠습니까?')">삭제</button>
+                            <!-- 버튼을 submit으로 바꿔서 JS가 동작하지 않아도 괜찮게 함 -->
+                            <button type="submit" onclick="return confirm('정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.');">삭제</button>
                         </form>
                     {% else %}
                         -
@@ -54,54 +71,6 @@
         {% endfor %}
         {% if posts|length == 0 %}
             <tr><td colspan="4">검색결과가 없습니다.</td></tr>
-        {% endif %}
-        </tbody>
-    </table>
-
-    <p style="margin-top:12px;"><a href="{{ url_for('index') }}">← 홈으로 돌아가기</a></p>
-</div>
-{% endblock %}
-{% extends "base.html" %}
-{% block content %}
-<div class="card">
-    <!-- 제목 + (자유게시판일 때 오른쪽 글쓰기 버튼) -->
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h2 style="margin:0;">{{ title }}</h2>
-        {% if board == 'free' and session.username %}
-            <div>
-                <a href="{{ url_for('write') }}" style="display:inline-block; padding:8px 12px; border:1px solid #666; border-radius:4px; text-decoration:none;">글쓰기</a>
-            </div>
-        {% endif %}
-    </div>
-
-    <!-- 공지일 때만 검색창 노출 -->
-    {% if board == 'notice' %}
-    <div style="margin:12px 0 0 0;">
-        <form method="post" style="display:flex; gap:8px; align-items:center;">
-            <input name="q" placeholder="검색어를 입력하세요." style="flex:1; padding:8px;" value="{{ q|e }}">
-            <button type="submit">검색</button>
-        </form>
-    </div>
-    {% endif %}
-
-    <table class="post-table" style="margin-top:16px;">
-        <thead>
-            <tr>
-                <th>번 호</th>
-                <th>제 목</th>
-                <th>작 성 자</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for p in posts %}
-            <tr>
-                <td>{{ p.id }}</td>
-                <td><a href="{{ url_for('post', post_id=p.id) }}">{{ p.title }}</a></td>
-                <td>{{ p.author }}</td>
-            </tr>
-        {% endfor %}
-        {% if posts|length == 0 %}
-            <tr><td colspan="3">검색결과가 없습니다.</td></tr>
         {% endif %}
         </tbody>
     </table>
