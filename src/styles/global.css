@@ -1,0 +1,65 @@
+@theme {
+  /* Colors */
+  --color-main: #1a1a2e;
+  --color-card-background: #2a2a4a;
+  --color-navigation: #21213f;
+  --color-primary-text: #e0e0e0;
+  --color-secondary-text: #a0a0b0;
+  --color-accent-primary1: #00bfff;
+  --color-accent-primary2: #00ffd1;
+  --color-accent-warning: #ff6b6b;
+  --color-accent-caution: #ffeb55;
+  --color-edge: #a0a0a0;
+
+  /* Code Syntax */
+  --color-code-bg: #282c34;
+  --color-code-syntax: #f8f8f2;
+  --color-code-keyword: #ff79c6;
+  --color-code-string: #00ffd1;
+  --color-code-number: #ff6b6b;
+
+  /* Fonts */
+  --font-header: 'Montserrat', sans-serif;
+  --font-body: 'Noto Sans KR', sans-serif;
+
+  /* Font Sizes */
+  --text-h1: 2.5rem;
+  --text-h2: 1.875rem;
+  --text-h3: 1.5rem;
+  --text-body: 1rem;
+  --text-caption: 0.875rem;
+}
+
+@layer base {
+  body {
+    @apply bg-main text-primary-text font-body;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-header;
+  }
+
+  h1 {
+    @apply text-h1;
+  }
+  h2 {
+    @apply text-h2;
+  }
+  h3 {
+    @apply text-h3;
+  }
+
+  p {
+    @apply text-body;
+  }
+
+  small,
+  .caption {
+    @apply text-caption text-secondary-text;
+  }
+}
