@@ -1,30 +1,38 @@
+import { useState } from 'react';
 import { Bell, User } from 'lucide-react';
 import logo from '../assets/images/logo.png';
 
 export default function Header() {
+  const [activeLink, setActiveLink] = useState('이론 학습');
+
+  const navLinks = [
+    '서비스 소개',
+    '이론 학습',
+    '실전 문제',
+    '커뮤니티',
+    '랭킹',
+  ];
+
   return (
-    <header className="bg-[#21213f] ">
+    <header className="bg-[#21213f]">
       <nav className="container mx-auto py-4 flex justify-between items-center">
         <a href="/">
           <img src={logo} alt="Hack 'n' Learn" className="h-6" />
         </a>
 
         <div className="hidden md:flex items-center space-x-12 text-primary-text">
-          <a href="#" className="hover:text-accent-primary1 transition-colors">
-            서비스 소개
-          </a>
-          <a href="#" className="text-accent-primary1 font-bold">
-            이론 학습
-          </a>
-          <a href="#" className="hover:text-accent-primary1 transition-colors">
-            실전 문제
-          </a>
-          <a href="#" className="hover:text-accent-primary1 transition-colors">
-            커뮤니티
-          </a>
-          <a href="#" className="hover:text-accent-primary1 transition-colors">
-            랭킹
-          </a>
+          {navLinks.map((link) => (
+            <a
+              key={link}
+              href="#"
+              className={`hover:text-accent-primary1 transition-colors ${
+                activeLink === link ? 'text-accent-primary1 font-bold' : ''
+              }`}
+              onClick={() => setActiveLink(link)}
+            >
+              {link}
+            </a>
+          ))}
         </div>
         <div className="flex items-center space-x-4 text-primary-text">
           <Bell />
