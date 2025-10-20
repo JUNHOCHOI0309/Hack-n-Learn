@@ -13,7 +13,7 @@
 ### 🧭 프로젝트 내려받기
 원하는 폴더로 이동
 ```
-cd C:\Users\내이름\Desktop
+cd C:\Users\내이름\Desktop\Hallymbank
 ```
 
 GitHub에서 프로젝트 클론
@@ -23,7 +23,7 @@ git clone https://github.com/mongttangtta/Hack-n-Learn.git
 
 프로젝트 폴더로 이동
 ```
-cd HallymBank
+cd Hack-n-Learn
 ```
 
 브랜치 변경
