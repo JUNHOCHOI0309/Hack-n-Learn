@@ -1,13 +1,13 @@
-import AIChatBot from './components/AIChatBot';
+
+import { Routes, Route } from 'react-router-dom';
 import LearningPageDetail from './pages/LearningPageDetail';
-import LearningPageMain from './pages/LearningPageMain';
-import LoginPage from './pages/login';
-import SignupPage from './pages/signup';
+import LearningPageQuiz from './pages/LearningPageQuiz';
 
 export default function App() {
   return (
-    <>
-      <LearningPageDetail />
-    </>
+    <Routes>
+      <Route path="/" element={<LearningPageDetail />} />
+      <Route path="/learningPageQuiz" element={<LearningPageQuiz />} />
+    </Routes>
   );
 }

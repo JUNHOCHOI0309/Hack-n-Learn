@@ -111,7 +111,6 @@ export default function LearningPage() {
   return (
     <div className=" min-h-screen text-primary-text">
       <Header />
-
       {/* Hero Section */}
       <HeroSection
         imageUrl={heroImage}

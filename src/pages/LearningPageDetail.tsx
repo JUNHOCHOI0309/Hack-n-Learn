@@ -1,24 +1,20 @@
-import React from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../layout/Header';
 import HeroSection from '../components/HeroSection';
 import heroImage from '../assets/images/이론학습 상세.png';
 import Button from '../components/Button';
-
-const WarningBox = () => (
-  <div
-    className="bg-red-400/20 border border-red-400 text-red-400 px-4 py-3 rounded-lg relative mb-16"
-    role="alert"
-  >
-    <strong className="font-bold">경고:</strong>
-    <span className="block sm:inline">
-      {' '}
-      이 코드는 교육 목적 전용입니다. 절대 인터넷에 올리거나 타인 대상 테스트에
-      사용하지 마세요. 실습은 반드시 로컬(localhost / 127.0.0.1)에서만 하세요.
-    </span>
-  </div>
-);
+import LearningPageDetail2 from './LearningPageDetail2';
+import WarningMessage from '../components/WarningMessage';
 
 export default function LearningPageDetail() {
+  const [showDetail2, setShowDetail2] = useState(false);
+  const navigate = useNavigate();
+
+  const toggleDetail2 = () => {
+    setShowDetail2(!showDetail2);
+  };
+
   return (
     <div className="min-h-screen text-primary-text">
       <Header />
@@ -28,9 +24,9 @@ export default function LearningPageDetail() {
         subtitle="사용자의 입력을 필터링하지 않고 그대로 출력할 때, 악성 스크립트를 삽입해 실행시키는 취약점."
       />
       <div className="container mx-auto max-w-[1440px] px-20 py-16">
-        <WarningBox />
+        <WarningMessage />
         <section className="mb-16">
-          <h2 className="text-3xl font-bold mb-8">개요 & 학습 목표</h2>
+          <h2 className="text-h2 font-bold mb-8">개요 & 학습 목표</h2>
           <p className="text-lg">
             이 챕터에서는 크로스 사이트 스크립팅(XSS)의 기본 개념을 이해하고,
             다양한 유형의 XSS 공격을 식별하며, 안전한 코딩 관행을 통해 이를
@@ -79,7 +75,10 @@ export default function LearningPageDetail() {
         <section className="mb-16">
           <h2 className="text-3xl font-bold mb-8">XSS 종류</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-card-background p-6 rounded-lg border-2 border-edge">
+            <div
+              className="bg-card-background p-6 rounded-lg border-2 border-edge cursor-pointer"
+              onClick={toggleDetail2}
+            >
               <h3 className="text-2xl font-bold text-primary-text mb-4">
                 Stored XSS (저장형)
               </h3>
@@ -88,7 +87,7 @@ export default function LearningPageDetail() {
                 저장 → 다른 사용자가 해당 페이지를 열 때 서버에서 DB로부터
                 불러와 그대로 렌더링 → 공격 실행
               </p>
-              <p className="text-red-400 font-bold">위험도: 매우 높음</p>
+              <p className="font-bold">위험도: 매우 높음</p>
             </div>
             <div className="bg-card-background p-6 rounded-lg border-2 border-edge">
               <h3 className="text-2xl font-bold text-primary-text mb-4">
@@ -99,7 +98,7 @@ export default function LearningPageDetail() {
                 반영되어 즉시 실행됨. 보통 공격자는 URL을 만들어 피해자에게 클릭
                 유도(피싱 이메일, 채팅 등).
               </p>
-              <p className="text-yellow-400 font-bold">위험도: 높음</p>
+              <p className=" font-bold">위험도: 높음</p>
             </div>
             <div className="bg-card-background p-6 rounded-lg border-2 border-edge">
               <h3 className="text-2xl font-bold text-primary-text mb-4">
@@ -110,12 +109,13 @@ export default function LearningPageDetail() {
                 URL/fragment/cookie 등 클라이언트 측 데이터를 DOM에 안전하지
                 않게 반영할 때 발생. 서버는 균열이 없음.
               </p>
-              <p className="text-yellow-400 font-bold">
+              <p className=" font-bold">
                 주의: 복잡한 SPA(React/Vue/Angular)에서도 실수로 DOM XSS가
                 발생할 수 있음.
               </p>
             </div>
           </div>
+          {showDetail2 && <LearningPageDetail2 />}
         </section>
 
         <hr className="border-edge my-16" />
@@ -250,6 +250,7 @@ export default function LearningPageDetail() {
           <Button
             variant="primary"
             className="w-72 h-12 text-xl font-semibold rounded-[20px]"
+            onClick={() => navigate('/learningPageQuiz')}
           >
             퀴즈 풀러가기
           </Button>
