@@ -13,12 +13,12 @@ export const listTechniques = async (req, res, next) => {
 };
 
 /**
- * GET /api/theory/techniques/:techniqueId
+ * GET /api/theory/techniques/:slug
  */
 export const getTechniqueWithLevels = async (req, res, next) => {
   try {
-    const { techniqueId } = req.params;
-    const result = await theoryService.getTechniqueWithLevels(techniqueId);
+    const { slug } = req.params;
+    const result = await theoryService.getTechniqueDetail(slug);
     if (!result) {
       return res.status(404).json({ success: false, message: "데이터가 존재하지 않습니다" });
     }
@@ -29,12 +29,12 @@ export const getTechniqueWithLevels = async (req, res, next) => {
 };
 
 /**
- * GET /api/theory/techniques/:techniqueId/levels/:levelId
+ * GET /api/theory/techniques/:slug/levels/:order
  */
 export const getLevelDetail = async (req, res, next) => {
   try {
-    const { techniqueId, levelId } = req.params;
-    const result = await theoryService.getLevelDetail(techniqueId, levelId);
+    const { slug, order } = req.params;
+    const result = await theoryService.getTechniqueLevelDetail(slug, order);
     if (!result || result.notFound) {
       return res.status(404).json({ success: false, message: "데이터가 존재하지 않습니다" });
     }

@@ -2,6 +2,7 @@
 import mongoose from "mongoose";
 import Technique from "../models/theory.model.js";
 import TechniqueLevel from "../models/techniqueLevel.model.js";
+import TechniqueContent from "../models/techniqueContent.model.js";
 
 /**
  * 모든 Technique(카테고리) 리스트 조회
@@ -14,23 +15,27 @@ export const listTechniques = async () => {
     .lean();
 };
 
-/** 특정 기법 상세 + 연결된 레벨 목록 */
-export const getTechniqueWithLevels = async (techniqueId) => {
-  let technique;
-  if (mongoose.Types.ObjectId.isValid(techniqueId)) {
-    technique = await Technique.findById(techniqueId).lean();
-  } else {
-    technique = await Technique.findOne({ slug: techniqueId }).lean();
-  }
+/** 특정 기법 상세 조회 (이론 + 실습 레벨 + 참고자료) */
+export const getTechniqueDetail = async (slug) => {
+  const technique = await Technique.findOne({ slug }).lean();
+  if (!technique) return null;
 
-  if(!technique) return null;
+  const [ overview, levels, reference ] = await Promise.all([
+    TechniqueContent.find({ techniqueId: technique._id, section : "overview" })
+      .sort({ order: 1 })
+      .select("order title contentType raw html blocks")
+      .lean(),
+    TechniqueLevel.find({ techniqueId: technique._id })
+      .sort({ order: 1 })
+      .select("_id order title summary")
+      .lean(),
+    TechniqueContent.find({ techniqueId: technique._id, section : "reference" })
+      .sort({ order: 1 })
+      .select("order title contentType raw html blocks")
+      .lean(),
+  ]);
 
-  const levels = await TechniqueLevel.find({ techniqueId: technique._id })
-    .sort({ order: 1 })
-    .select("_id order description")
-    .lean();
-
-  return { ...technique, levels };
+  return { technique, overview, levels, reference };
 }
 
 
@@ -39,26 +44,15 @@ export const getTechniqueWithLevels = async (techniqueId) => {
  * techniqueId: ObjectId or slug
  * levelId: level document _id
  */
-export const getLevelDetail = async (techniqueId, levelId) => {
-  // 먼저 technique 존재 여부 확인 (보안/유효성)
-  let technique;
-  if (mongoose.Types.ObjectId.isValid(techniqueId)) {
-    technique = await Technique.findById(techniqueId).select("_id title").lean();
-  } else {
-    technique = await Technique.findOne({ slug: techniqueId }).select("_id title").lean();
-  }
-  if (!technique) return { notFound: true };
+export const getTechniqueLevelDetail = async ( slug, order ) => {
+  const technique = await Technique.findOne({ slug }).select("_id title slug").lean();
+  if (!technique) return null;
 
-  // levelId 가 ObjectId 유효한지 검사
-  if (!mongoose.Types.ObjectId.isValid(levelId)) {
-    return { notFound: true };
-  }
-
-  const level = await TechniqueLevel.findOne({ _id: levelId, techniqueId: technique._id })
-    .select("_id order description exampleCode createdAt updatedAt")
+  const level = await TechniqueLevel.findOne({ techniqueId: technique._id, order : Number(order), })
+    .select("_id order title description exampleCode")
     .lean();
 
-  if (!level) return { notFound: true };
+  if (!level) return null;
 
   return { technique, level };
 };

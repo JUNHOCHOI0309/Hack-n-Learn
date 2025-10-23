@@ -10,11 +10,11 @@ const practiceSchema = new mongoose.Schema({
         solvedAt : { type : Date, default: Date.now },
 
         //실습 환경 관리
+        problemName : { type: String, default: null }, //실습 환경 이름
         labUrl : { type: String, default: null }, //실습 환경 URL
-        expiredAt : { type: Date, default: null }, //실습 환경 만료 시간
+        expiresAt : { type: Date, default: null }, //실습 환경 만료 시간
         }, { timestamps: true }
 );
 
-practiceSchema.index({ expiredAt: 1 }, { expireAfterSeconds: 0 }); // 만료된 문서 자동 삭제
 const Practice = mongoose.model('Practice', practiceSchema);
 export default Practice;
