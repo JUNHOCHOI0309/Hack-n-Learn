@@ -2,6 +2,7 @@
 import { Router } from "express";
 import { exec } from "child_process";
 import util from "util";
+import mongoose from "mongoose";
 import Practice from "../models/practice.model.js";
 import Problem from "../models/problem.model.js";
 import * as problemController from "../controllers/problems.controller.js";
