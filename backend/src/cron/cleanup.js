@@ -3,9 +3,16 @@ import { exec } from "child_process";
 import util from "util";
 import Practice from "../models/practice.model.js";
 
+import dotenv from "dotenv";
+dotenv.config();
+
 const execPromise = util.promisify(exec);
 
 async function cleanupExpiredPractices() {
+        if (!process.env.MONGODB_URI) {
+                console.error('MONGODB_URI is not defined in environment variables');
+                return;
+        }
         await mongoose.connect(process.env.MONGODB_URI);
         const expired = await Practice.find({ status: 'running', expiresAt: { $lt: new Date() } });
 
