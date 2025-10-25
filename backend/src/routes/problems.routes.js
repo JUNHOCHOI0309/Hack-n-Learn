@@ -31,7 +31,7 @@ router.get("/:id", validateQuery('getProblemById'), problemController.getProblem
 router.post("/:id/start-lab", requireLogin, async( req, res) => {
         try{
                 const { id } = req.params;
-                const userId = req.user._id;
+                const userId = new mongoose.Types.ObjectId("671234567890abcdef123456"); //req.user._id
                 // 1. Problem 찾기 (ObjectId 또는 slug로)
                 let problem;
                 if (mongoose.Types.ObjectId.isValid(id)) {
@@ -116,7 +116,7 @@ router.post("/:id/start-lab", requireLogin, async( req, res) => {
 router.post("/:id/stop-lab", requireLogin, async( req, res) => {
         try {
                 const { id } = req.params;
-                const userId = req.user._id;
+                const userId = new mongoose.Types.ObjectId("671234567890abcdef123456"); //req.user._id
 
                 const practice = await Practice.findOne({ userId, problemId: id, status: 'running' });
                 if (!practice) return res.status(404).json({ success: false, message: "No running lab environment found." });
@@ -138,7 +138,7 @@ router.post("/:id/stop-lab", requireLogin, async( req, res) => {
 
 router.get("/running-labs", requireLogin, async (req, res) => {
         try {
-                const userId = req.user._id;
+                const userId = new mongoose.Types.ObjectId("671234567890abcdef123456"); //req.user._id
                 const runningLabs = await Practice.find({ userId, status: 'running' });
                 res.json({ success: true, runningLabs });
         } catch (error) {
