@@ -12,7 +12,7 @@ interface HeaderProps {
 const ChallengeHeader: React.FC<HeaderProps> = ({ title, subtitle, score }) => {
   return (
     <header className="bg-[#21213f] ">
-      <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
+      <nav className="container mx-auto py-4 flex justify-between items-center">
         <div className="flex items-center gap-10">
           <img src={logo} alt="Hack 'n' Learn" className="h-6" />{' '}
           {/* Replaced with image */}

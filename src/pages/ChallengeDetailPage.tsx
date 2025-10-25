@@ -1,30 +1,48 @@
-import { useState, useEffect } from 'react';
-import { useBlocker } from 'react-router-dom'; // Import useBlocker
+import { useState, useEffect, useCallback } from 'react'; // Add useCallback
+import { useBlocker, useNavigate } from 'react-router-dom'; // Import useBlocker, useNavigate
 import LogBox from '../components/Challenge/Logbox';
 import ChallengeHeader from '../components/Challenge/ChallengeHeader';
 import type { LogEntry, HintData } from '../types/logs';
 import Button from '../components/Button';
 
-// ...
+const CORRECT_FLAG = 'test_flag'; // Define CORRECT_FLAG for testing
 
 export default function ChallengeDetailPage() {
   const [score, setScore] = useState<number>(100);
   const [flagValue, setFlagValue] = useState<string>('');
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [nextHintIndex, setNextHintIndex] = useState<number>(0);
+  const [shouldBlock, setShouldBlock] = useState<boolean>(true); // State to control blocking
+  const navigate = useNavigate(); // Initialize useNavigate
 
   // Use useBlocker for in-app navigation
-  useBlocker(
-    true, // Always block navigation
-    '변경사항이 저장되지 않을 수 있습니다. 정말로 페이지를 떠나시겠습니까?'
-  );
+  const blocker = useBlocker(useCallback(() => shouldBlock, [shouldBlock]));
+
+  useEffect(() => {
+    if (blocker.state === 'blocked') {
+      const autoConfirm = window.confirm(
+        '변경사항이 저장되지 않을 수 있습니다. 정말로 페이지를 떠나시겠습니까?'
+      );
+      if (autoConfirm) {
+        // User confirmed, proceed with navigation
+        setShouldBlock(false); // Allow navigation
+        blocker.proceed();
+      } else {
+        // User cancelled, reset blocker
+        blocker.reset();
+      }
+    }
+  }, [blocker, shouldBlock]);
 
   // Keep useEffect for browser tab close/external navigation
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      event.returnValue =
-        '변경사항이 저장되지 않을 수 있습니다. 정말로 페이지를 떠나시겠습니까?';
+      if (shouldBlock) {
+        // Only block if shouldBlock is true
+        event.preventDefault();
+        event.returnValue =
+          '변경사항이 저장되지 않을 수 있습니다. 정말로 페이지를 떠나시겠습니까?';
+      }
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -32,7 +50,7 @@ export default function ChallengeDetailPage() {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, []);
+  }, [shouldBlock]); // Add shouldBlock to dependency array
 
   /** 힌트 요청 처리 */
   const handleHintRequest = () => {
@@ -76,7 +94,7 @@ export default function ChallengeDetailPage() {
   const handleAnswerSubmit = () => {
     if (flagValue === CORRECT_FLAG) {
       // 정답
-      alert('정답입니다! 다음 레벨로 진행합니다.');
+      alert('정답입니다! 결과 화면으로 이동합니다.');
       setLogs((prev) => [
         ...prev,
         {
@@ -85,7 +103,10 @@ export default function ChallengeDetailPage() {
           cost: 0,
         },
       ]);
-      // TODO: 다음 챌린지로 이동하는 로직
+      setShouldBlock(false); // Allow navigation
+      setTimeout(() => {
+        navigate('/challenge/result', { state: { score } }); // Navigate to ChallengeResultPage with score
+      }, 0);
     } else {
       // 오답
       const penalty = 10;

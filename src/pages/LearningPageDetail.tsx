@@ -250,7 +250,7 @@ export default function LearningPageDetail() {
           <Button
             variant="primary"
             className="w-72 h-12 text-xl font-semibold rounded-[20px]"
-            onClick={() => navigate('/learningPageQuiz')}
+            onClick={() => navigate('/learning/quiz')} // Corrected path
           >
             퀴즈 풀러가기
           </Button>
