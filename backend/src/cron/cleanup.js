@@ -20,7 +20,7 @@ async function cleanupExpiredPractices() {
                 try {
                         await execPromise(`docker stop ${p.containerName}`);
                         await execPromise(`docker rm ${p.containerName}`);
-                        p.status = 'expired';
+                        p.status = 'stopped';
                         await p.save();
                         console.log(`Cleaned up expired practice: ${p._id}`);
                 } catch (error) {
