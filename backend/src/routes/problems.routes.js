@@ -79,8 +79,6 @@ router.post("/:id/start-lab", async( req, res) => { // requireLogin 추가
                 --cpus="0.25" \
                 --restart=no \
                 practice-${problem.slug}:latest`;
-
-                console.log(`Starting container: ${containerName} on port ${port}`);
     
                 try {
                         await execPromise(dockerCommand);
@@ -89,6 +87,8 @@ router.post("/:id/start-lab", async( req, res) => { // requireLogin 추가
                         usedPorts.delete(port);
                         throw dockerError;
                 }
+
+                console.log(`Starting container: ${containerName} on port ${port}`);
 
                 const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 30분 후 만료
                 const practice = await Practice.create({
