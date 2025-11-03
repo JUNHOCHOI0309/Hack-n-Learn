@@ -36,10 +36,10 @@ export default function Header() {
         </div>
         <div className="flex items-center space-x-4 text-primary-text">
           <Bell />
-          <span className="flex">
+          <Link to="/mypage" className="flex items-center space-x-1">
             <User />
-            이준수님
-          </span>
+            <span>이준수님</span>
+          </Link>
           <Link
             to="/logout"
             className="text-sm text-secondary-text hover:text-white transition-colors border rounded-[5px] px-1 py-0.5"

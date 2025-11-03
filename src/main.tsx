@@ -18,6 +18,7 @@ import QnaBoard from './pages/community/QnaBoard';
 import Archive from './pages/community/Archive';
 import CommunityPostDetailPage from './pages/CommunityPostDetailPage';
 import RankingPage from './pages/RankingPage';
+import MyPage from './pages/MyPage';
 
 import SignupPage from './pages/SignupPage';
 import ChallengeResultPage from './pages/ChallengeResultPage'; // Import ChallengeResultPage
@@ -52,6 +53,7 @@ const router = createBrowserRouter([
       { path: 'ranking', element: <RankingPage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'signup', element: <SignupPage /> },
+      { path: 'mypage', element: <MyPage /> },
     ],
   },
 ]);
