@@ -1,7 +1,7 @@
 // 이론 학습 관련 라우트
 import express from "express";
 import { listTechniques, getTechniqueWithLevels, getLevelDetail } from "../controllers/theory.controller.js";
-import { postGenerateQuiz, getQuizzesByLevel, postAnswerQuiz, getWrongNotes } from "../controllers/quiz.controller.js";
+import * as quizController from "../controllers/quiz.controller.js";
 import { requireLogin } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
@@ -397,22 +397,7 @@ const router = express.Router();
  *         title:
  *           type: string
  *           example: "SQL Injection"
- *         imageUrl:
- *           type: string
- *           example: "/uploads/sql.png"
- *         outline:
- *           type: string
- *           example: "DB 쿼리 조작 공격"
- *         tags:
- *           type: array
- *           items:
- *             type: string
- *           example: ["injection", "database", "web"]
  *         createdAt:
- *           type: string
- *           format: date-time
- *           example: "2025-09-26T10:00:00Z"
- *         updatedAt:
  *           type: string
  *           format: date-time
  *           example: "2025-09-26T10:00:00Z"
@@ -696,23 +681,20 @@ router.get("/techniques/:slug", requireLogin, getTechniqueWithLevels);
 router.get("/techniques/:slug/levels/:order", requireLogin, getLevelDetail);
 
 
-// 퀴즈 생성 (최초 요청 시 AI/Preset → DB에 저장)
-// POST /api/theory/quiz/generate
-router.post("/quiz/generate", requireLogin, postGenerateQuiz);
 
-// 특정 Technique + Level에 대한 퀴즈 목록 조회
-// GET /api/theory/quiz/:slug/levels/:order
-router.get("/quiz/:slug/levels/:order", requireLogin, getQuizzesByLevel);
-
+// GET /api/theory/quiz/:slug
+router.get("/quiz/:slug", requireLogin, quizController.getQuizzesBySlug);
 
 // 퀴즈 정답 제출 및 채점 ( 한 문제 한 문제에 대한 답안 제출 )
-// POST /api/theory/quiz/:quizId/answer
-router.post("/quiz/:quizId/answer", requireLogin, postAnswerQuiz);
+// POST /api/theory/quiz/:quizId/check
+router.post("/quiz/:quizId/check", requireLogin, quizController.checkAnswerAndAward);
 
 // 오답노트 조회 (필터: techniqueId, levelId)
 // GET /api/theory/quiz/:quizId/wrong-notes
-router.get("/quiz/:quizId/wrong-notes", requireLogin, getWrongNotes);
+router.get("/quiz/:quizId/wrong-notes", requireLogin, quizController.getWrongNotes);
 
-
+// 퀴즈 결과 해설 생성 요청
+// POST /api/theory/quiz/:slug/result-explanation
+router.post("/quiz/:slug/result-explanation", requireLogin, quizController.generateQuizResultExplanation);
 
 export default router;

@@ -1,116 +1,90 @@
 import mongoose from "mongoose";
 import Technique from "../models/theory.model.js";
-import TechniqueLevel from "../models/techniqueLevel.model.js";
 import Quiz from "../models/quiz.model.js";
-import PresetQuiz from "../models/presetQuiz.model.js";
 import WrongNote from "../models/wrongNode.model.js";
-import { generateQuizItemsViaAI} from "../utils/ai.client.js";
+import dotenv from "dotenv";
+dotenv.config();
+import { analyzeAnswersBatch } from "../utils/ai.client.js";
 
-async function findTechniqueAndLevel({techniqueId, levelId}) {
-        let technique;
+let UserModel = null;
 
-        if(mongoose.Types.ObjectId.isValid(techniqueId)) {
-                technique = await Technique.findById(techniqueId).lean();
-        } else{
-                technique = await Technique.findOne({ slug: techniqueId }).lean();
-        }
-        if(!technique) return { notFound: true };
-
-        if(!mongoose.Types.ObjectId.isValid(levelId)) return { notFound: true };
-        const level = await TechniqueLevel.findOne({ _id: levelId, techniqueId: technique._id }).lean();
-        if(!level) return { notFound: true };
-
-        return { technique, level };
+try {
+        const mod = await import("../models/user.model.js");
+        UserModel = mod.default;
+} catch (error) {
+        console.error("Error loading User model:", error);
 }
 
-export async function generateQuiz({ techniqueId, levelId}){
-        const result = await findTechniqueAndLevel(techniqueId, levelId);
-        if(result.notFound) return { notFound: true };
+const CORRECT_SCORE = 10;
 
-        const { technique, level } = result;
-
-        const existing = await Quiz.find({ techniqueId: technique._id, levelId: level._id }).lean();
-        if(existing.length > 0){
-                return { technique, level, quizzes: existing , created: false};
-        }
-
-        let items;
-        try{
-                items = await generateQuizItemsViaAI({technique, level, limit:5});
-        } catch {
-                const presets = await PresetQuiz.find({ techniqueId: technique._id, levelId: level._id }).limit(5).lean();
-                if(!presets.length){
-                        return { technique, level, quizzes:[], created: false, from : "none"};
-                }
-                const created = await Quiz.insertMany(
-                presets.map(p => ({
-                        techniqueId: technique._id,
-                        levelId: level._id,
-                        question: p.question,
-                        choices: p.choices,
-                        correctAnswer: p.correctAnswer,
-                        explanation: p.explanation,
-                        source: "preset"
-                }))
-                );
-                return { technique, level, quizzes: created, created: true, from: "preset" };
-        }
-        const created = await Quiz.insertMany(
-                        presets.map(p => ({
-                                techniqueId: technique._id,
-                                levelId: level._id,
-                                question: p.question,
-                                choices: p.choices,
-                                correctAnswer: p.correctAnswer,
-                                explanation: p.explanation,
-                                source: "ai"
-                        }))
-                );
-        return { technique, level, quizzes: created, created: true, from: "ai" };
+function isValidObjectId(id) {
+        return mongoose.Types.ObjectId.isValid(id);
 }
 
-export async function listQuizzesByLevel(techniqueId, levelId){
-        const result = await findTechniqueAndLevel(techniqueId, levelId);
-        if(result.notFound) return { notFound: true };
-
-        const { technique, level } = result;
-        const quizzes = await Quiz.find({ techniqueId: technique._id, levelId: level._id })
-                .select("_id question choices createdAt source")
-                .sort({ createdAt: 1 })
-                .lean();
-
-        return { technique, level, quizzes };
+async function findTechniqueBySlug({ slug }) {
+        const technique = await Technique.findOne({ slug }).lean();
+        if (!technique) return { notFound: true };
+        return { technique };
 }
 
-export async function answerQuiz({ userId, quizId, userAnswer }){
-        if(!mongoose.Types.ObjectId.isValid(quizId)) return { notFound: true };
+export async function listQuizzesBySlug(slug){
+        const ref = await findTechniqueBySlug({ slug });
+        if(ref.notFound) return { notFound: true };
 
-        const quiz = await Quiz.findById(quizId).lean();
+        const { technique } = ref;
+        const quizzes = await Quiz.find({ techniqueId: technique._id })
+        .select("techniqueId levelId question choices explanation source")
+        .sort({ createdAt: -1 })
+        .lean();
+        return { technique, quizzes };
+}
+
+export async function checkAnswerAndAward({ userId, quizId, userAnswer }){
+        if(!isValidObjectId(quizId)) return { notFound: true };
+        const quiz =  await Quiz.findById(quizId).lean();
         if(!quiz) return { notFound: true };
 
-        const correct = Number(userAnswer) === Number(quiz.correctAnswer);
+        const correct = quiz.correctAnswer === userAnswer;
 
         if(!correct){
                 await WrongNote.create({
                         userId,
-                        techniqueId: quiz.techniqueId,
-                        levelId: quiz.levelId,
                         quizId: quiz._id,
+                        techniqueId: quiz.techniqueId,
                         question: quiz.question,
                         choices: quiz.choices,
-                        userAnswer: Number(userAnswer),
+                        userAnswer: userAnswer,
                         correctAnswer: quiz.correctAnswer,
                         explanation: quiz.explanation
                 });
         }
+        
+        let totalPoints = undefined;
+        let earned = 0;
+        if(correct && UserModel){
+                earned = CORRECT_SCORE;
+                const updated = await UserModel.findByIdAndUpdate(
+                        userId,
+                        { $inc: { points: CORRECT_SCORE } },
+                        { new: true }
+                ).select("points").lean();
+                totalPoints = updated?.points;
+        } else if(correct){
+                earned = CORRECT_SCORE;
+        }
 
-        return { correct, userAnswer: Number(userAnswer), correctAnswer: quiz.correctAnswer, explanation: quiz.explanation || "" };
+        return {
+                correct,
+                correctAnswer: quiz.correctAnswer,
+                explanation: quiz.explanation || "",
+                earned,
+                totalPoints
+        };
 }
 
-export async function listWrongNotes({ userId, techniqueId, levelId, page=1, size =20 }){
+export async function listWrongNotes({ userId, techniqueId,page=1, size =20 }){
         const query = { userId };
         if(techniqueId) query.techniqueId = techniqueId;
-        if(levelId) query.levelId = levelId;
 
         const skip = (page -1) * size;
 
@@ -119,10 +93,104 @@ export async function listWrongNotes({ userId, techniqueId, levelId, page=1, siz
                         .sort({ createdAt: -1 })
                         .skip(skip)
                         .limit(size)
-                        .select("quizId techniqueId levelId question choices userAnswer correctAnswer explanation createdAt")
+                        .select("quizId techniqueId question choices userAnswer correctAnswer explanation createdAt")
                         .lean(),
                 WrongNote.countDocuments(query)
         ]);
 
         return { items, meta: { page, size, total }};
+}
+
+
+export async function buildResultExplanation({ userId, slug}){
+        const ref = await findTechniqueBySlug({ slug });
+        if(ref.notFound) return { ok : false, message: "Technique not found" };
+
+        const { technique } = ref;
+
+        const totalCount = await Quiz.countDocuments({ techniqueId: technique._id });
+
+        const wrongs = await WrongNote.find({ userId, techniqueId: technique._id })
+                .select("_id quizId question choices userAnswer correctAnswer explanation")
+                .lean();
+
+        const items = wrongs.map((w) => ({
+                quizId: String(w.quizId ?? w._id),
+                question: w.question ?? "",
+                choices: Array.isArray(w.choices) ? w.choices : [],
+                userAnswer: String(w.userAnswer ?? null),
+                correctAnswer: String(w.correctAnswer ?? null),
+                explanation: String(w.explanation ?? ""),
+        }));
+
+        const aiPayload = { userId: String(userId), items};
+
+        let aiResult;
+
+        try{
+                aiResult = await analyzeAnswersBatch({
+                        payload : aiPayload,
+                        model : process.env.EXPLAIN_MODEL || "gpt-5-main",
+                        timeoutMs : parseInt(process.env.EXPLAIN_TIMEOUT_MS) || 12000,
+                });
+        }catch(error){
+                console.error("Error analyzing answers:", error);
+                return {
+                        ok: true,
+                        status : 200,
+                        data: {
+                                title: `${technique.title} 종합 해설`,
+                                summary: "AI 응답 실패로 간단 요약만 제공합니다.",
+                                focusAreas: [],
+                                nextSteps: ["모델 호출 오류 — 잠시 후 재시도하세요."],
+                                model: process.env.EXPLAIN_MODEL || "gpt-5-main",
+                                stats: { totalCount, correctCount: Math.max(0, totalCount - items.length), wrongCount: items.length },
+                                createdAt: new Date(),
+                        },
+                };
+        }
+
+        const results = aiResult?.results || [];
+
+        const wrongCount = items.length;
+        const correctCount = Math.max(0, totalCount - wrongCount);
+
+        const conceptMap = new Map();
+
+        for(const r of results){
+                for(const m of r.mistakeAnalysis || []){
+                        const key = m.toLowerCase().slice(0, 80);
+                        conceptMap.set(key, (conceptMap.get(key) || 0) +1);
+                }
+        }
+
+        const focusAreas = Array.from(conceptMap.entries())
+                .sort((a,b) => b[1] - a[1])
+                .slice(0,5)
+                .map(([k,v]) => `${k} (실수 횟수: ${v})`);
+        
+        const nextStepsSet = new Set();
+        for(const r of results){
+                const steps = r.stepByStepSolution || [];
+                if(steps.length) nextStepsSet.add(steps[0]);
+        }
+        const nextSteps = Array.from(nextStepsSet).slice(0,5);
+
+        return {
+                ok: true,
+                status : 200,
+                data: {
+                      title: `${technique.title} 종합 해설`,
+                        summary:
+                                results.length > 0
+                                ? `총 ${totalCount}문항 중 ${correctCount}문항 정답, 오답 ${wrongCount}건에 대해 분석을 제공했습니다.`
+                                : `해당 레벨에서 오답이 없습니다. 학습을 유지하세요.`,
+                        focusAreas,
+                        nextSteps,
+                        model: process.env.EXPLAIN_MODEL || "gpt-5-main",
+                        stats: { totalCount, correctCount, wrongCount },
+                        createdAt: new Date(),
+                        perQuestionResults: results, // raw per-question AI results for frontend if needed  
+                },
+        }
 }

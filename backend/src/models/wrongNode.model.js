@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 const WrongNoteSchema = new mongoose.Schema({
         userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
         techniqueId: { type: mongoose.Schema.Types.ObjectId, ref: "Technique", required: true },
-        levelId: { type: mongoose.Schema.Types.ObjectId, ref: "TechniqueLevel", required: true },
         quizId: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz", required: true },
 
         question: { type: String, required: true },       // 문제 텍스트

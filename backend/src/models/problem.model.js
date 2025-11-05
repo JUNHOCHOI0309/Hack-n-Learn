@@ -24,7 +24,6 @@ const problemSchema = new mongoose.Schema({
         score : { type: Number, default: 0, min: 0 },
         flag : { type: String, required: true, select : false }, // 문제 풀이 정답
         answerRate : { type: Number, default: 0, min: 0, max: 1 }, 
-        createdBy : { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
         isActive : { type: Boolean, default: true },
         hints : [{
                 stage : { type: Number, required: true },

@@ -94,10 +94,8 @@ export const submitFlag = async ({userId, problemId, flag}) => {
 export const requestHint = async ({ userId, problemId, stage }) => {
         const uid = mongoose.Types.ObjectId(userId);
 
-        const practice = await Practice.findOne({ user: uid, problem: problemId});
-
         const usedHint = (practice?.usedHint || 0) + 1;
-        await Practice.UpdateOne(
+        await Problem.UpdateOne(
                 { user: uid, problem: problemId },
                 { 
                         $set: { usedHint },
