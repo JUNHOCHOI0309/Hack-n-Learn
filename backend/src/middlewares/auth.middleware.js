@@ -8,6 +8,21 @@ const registerSchema = Joi.object({
         email: Joi.string().email().required(),
 });
 
+const nicknameQuerySchema = Joi.object({
+        nickname: Joi.string()
+        .pattern(/^[a-zA-Z0-9가-힣._-]{2,30}$/)
+        .required()
+});
+
+export const validateNicknameQuery = (req, res, next) => {
+  const { error } = nicknameQuerySchema.validate(req.body, { abortEarly: true});
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+  req.body.nickname = String(req.body.nickname).trim();
+  next();
+};
+
 export const validateRegister = (req, res, next) => {
   const { error } = registerSchema.validate(req.body);
   if (error) {

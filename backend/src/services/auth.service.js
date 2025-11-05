@@ -5,6 +5,8 @@ import EmailVerify from "../models/emailVerify.model.js";
 import PasswordReset from "../models/passwordReset.model.js";
 import { sendEmail } from "../utils/mail.service.js";
 
+const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 export const sendVerificationCode = async(email) => {
         const code = String(Math.floor(100000 + Math.random() * 900000));
         const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
@@ -42,7 +44,11 @@ export const register = async (id, nickname, password, email) => {
 
         if(Date.now() > verified.expiresAt) throw new Error("Verification expired, please verify again");
 
-        const existingUser = await User.findOne({ $or: [ { id }, { nickname }, { email } ] });
+        const existingUser = await User.findOne({ 
+                $or: [ 
+                        { id }, 
+                        { nickname: new RegExp(`^${escapeRegex(nickname)}$`, 'i') }, 
+                        { email } ] });
         if(existingUser) throw new Error("ID, nickname or email already in use");
 
         const passwordHash = await bcrypt.hash(password, 10);
@@ -52,6 +58,14 @@ export const register = async (id, nickname, password, email) => {
         await EmailVerify.deleteOne({ email });
         
         return user;
+};
+
+export const isNicknameAvailable = async (nickname) => {
+        if(!nickname) throw new Error("Nickname is required");
+        const exist = await User.exists({
+                nickname : new RegExp(`^${escapeRegex(nickname)}$`, 'i')
+        });
+        return !exist;
 };
 
 export const login = async( id, password) => {

@@ -28,5 +28,7 @@ const userSchema = new mongoose.Schema({
         isProfileComplete: { type: Boolean, default: true }, // 프로필 완성 여부
 }, { timestamps: true });
 
+userSchema.index({ nickname: 1 }, { unique: true, collation: { locale: 'en', strength: 2 } });
+
 export default mongoose.model("User", userSchema);
         

@@ -1,4 +1,5 @@
 import * as authService from '../services/auth.service.js';
+import User from '../models/user.model.js';
 
 export const register = async (req, res, next) => {
         try{
@@ -41,6 +42,16 @@ export const logout = (req, res, next) => {
                 });
         } catch (error) {
                 next(error);
+        }
+};
+
+export const checkNickname = async (req, res, next) => {
+        try{
+                const nickname = req.body.nickname;
+                const available = await authService.isNicknameAvailable(nickname);
+                res.json({ available });
+        } catch (error) {
+                next(error);    
         }
 };
 

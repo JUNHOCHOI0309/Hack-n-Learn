@@ -1,7 +1,7 @@
 //로그인 페이지
 import { Router } from "express";
 import * as authController from "../controllers/auth.controller.js";
-import { validateRegister } from "../middlewares/auth.middleware.js";
+import { validateRegister, validateNicknameQuery } from "../middlewares/auth.middleware.js";
 import * as authService from "../services/auth.service.js";
 import passport from "passport";
 
@@ -10,6 +10,7 @@ const router = Router();
 router.post("/register" , validateRegister,authController.register);
 router.post("/login" , authController.login);
 router.post("/logout" , authController.logout);
+router.post("/check-nickname", validateNicknameQuery, authController.checkNickname);
 
 router.get("/me" , authController.me); // 현재 로그인한 사용자 정보 조회
 router.post("/complete-profile" , authController.completeProfile);
@@ -223,6 +224,53 @@ router.post("/reset-password/:token", async (req, res, next)=> {
  *                   example: 사용자
  *       400:
  *         description: 이메일 미인증 또는 중복 정보 존재
+ */
+/**
+ * @swagger
+ * /api/auth/check-nickname:
+ *   post:
+ *     summary: 닉네임 중복 검사 (POST, JSON)
+ *     tags: [Auth]
+ *     security: []  # 전역 bearerAuth를 비활성화하여 공개 엔드포인트로 설정
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/NicknameCheckRequest'
+ *           examples:
+ *             valid:
+ *               summary: 정상 케이스
+ *               value: { "nickname": "tester1" }
+ *             invalid:
+ *               summary: 규칙 위반(너무 짧음)
+ *               value: { "nickname": "a" }
+ *     responses:
+ *       200:
+ *         description: 사용 가능 여부
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NicknameCheckResponse'
+ *             examples:
+ *               available:
+ *                 summary: 사용 가능
+ *                 value: { "available": true }
+ *               taken:
+ *                 summary: 이미 존재
+ *                 value: { "available": false }
+ *       400:
+ *         description: 잘못된 요청(유효성 실패)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "\"nickname\" with value \"a\" fails to match the required pattern"
+ *       500:
+ *         description: 서버 오류
  */
 
 /**
