@@ -18,17 +18,6 @@ const isProduction = process.env.NODE_ENV === "production";
 app.use(helmet());
 app.use(express.json());
 app.use(expressMongoSanitize());
-
-app.use(
-        cors({
-                origin: [
-                        "http://localhost:5173",
-                        "https://hacknlearn.site",
-                ],
-                credentials: true,
-        })
-);
-
 app.use(errorHandler);
 
 app.set("trust proxy", 1);
