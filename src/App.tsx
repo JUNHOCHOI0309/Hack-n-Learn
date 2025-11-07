@@ -1,7 +1,8 @@
-import { useEffect } from 'react'; // Import useEffect
+import { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import Header from './layout/Header'; // Assuming Header is the main layout header
-import AIChatBot from './components/AIChatBot'; // Import AIChatBot
+import Header from './layout/Header';
+import AIChatBot from './components/AIChatBot';
+import { AuthProvider } from './contexts/AuthContext'; // Import AuthProvider
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -15,15 +16,15 @@ function ScrollToTop() {
 
 export default function App() {
   const location = useLocation();
-  const isChallengePage = location.pathname.startsWith('/challenge') && location.pathname !== '/challenge'; // Hide header for challenge sub-pages, but show for /challenge
+  const isChallengePage = location.pathname.startsWith('/challenge') && location.pathname !== '/challenge';
 
   const hideAIChatBot =
     location.pathname.startsWith('/challenge/') || // For ChallengeDetailPage and ChallengeResultPage
     location.pathname === '/learning/quiz'; // For LearningPageQuiz
 
   return (
-    <>
-      <ScrollToTop /> {/* Add ScrollToTop component */}
+    <AuthProvider> {/** Wrap the content with AuthProvider */}
+      <ScrollToTop />
       {!isChallengePage && <Header />}
       <Outlet />
       {!hideAIChatBot && (
@@ -31,6 +32,6 @@ export default function App() {
           <AIChatBot />
         </div>
       )}
-    </>
+    </AuthProvider>
   );
 }

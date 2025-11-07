@@ -6,6 +6,7 @@ import AuthInput from '../../components/AuthInput';
 import Button from '../../components/Button';
 import SocialButton from '../../components/SocialButton';
 import FormErrorMessage from '../../components/FormErrorMessage';
+import { useAuth } from '../../contexts/AuthContext'; // Import useAuth
 
 type ILoginFormInput = {
   username: string;
@@ -22,19 +23,19 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const { fetchUser } = useAuth(); // Get fetchUser from context
 
   const onSubmit: SubmitHandler<ILoginFormInput> = async (data) => {
     setIsLoading(true);
     setApiError(null);
     try {
-      const response = await axios.post('/api/auth/login', {
+      await axios.post('/api/auth/login', {
         id: data.username,
         password: data.password,
       });
 
-      // Assuming the backend returns user info on successful login
-      const userData = response.data;
-      console.log('Login successful:', userData);
+      // After successful login, fetch the user data to update the context
+      await fetchUser();
 
       navigate('/'); // Redirect to home page or dashboard
     } catch (err: any) {
