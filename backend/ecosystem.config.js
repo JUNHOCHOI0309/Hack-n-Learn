@@ -6,6 +6,8 @@ export const apps = [
     instances: 1,
     env: {
       NODE_ENV: "production",
+      OPENAI_API_KEY: "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",
+      EXPLAIN_MODEL: "gpt-5",
       PORT: 3000
     }
   },
