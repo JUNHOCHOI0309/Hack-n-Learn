@@ -1,33 +1,9 @@
 import * as problemsService from "../services/problems.service.js";
 
-export const listProblems = async (req, res, next) => {
-        try {
-                const userId = req.user.id;
-                const filters = req.query;
-                const problems = await problemsService.findProblemsWithFilters(userId, filters);
-                res.json({ success: true, data : problems });
-        } catch (error) {
-                next(error);
-        }
-};
-
-export const getProblem = async (req, res, next) => {
-        try {
-                const problemId = req.params.id;
-                const problem = await problemsService.getProblemById(problemId);
-                if (!problem) {
-                        return res.status(404).json({ success: false, message: "Problem not found" });
-                }
-                res.json({ success: true, data: problem });
-        } catch (error) {
-                next(error);
-        }
-};
-
 export const submitFlag = async (req, res, next) => {
         try {
                 const userId = req.user.id;
-                const problemId = req.params.id;
+                const problemId = req.params.slug;
                 const { flag } = req.body; // 사용자가 제출한 플래그
 
                 const result = await problemsService.submitFlag({ userId, problemId, flag });
@@ -40,7 +16,7 @@ export const submitFlag = async (req, res, next) => {
 export const requestHint = async (req, res, next) => {
         try {
                 const userId = req.user.id;
-                const problemId = req.params.id;
+                const problemId = req.params.slug;
                 const { stage } = req.body; // 요청하는 힌트 단계
 
                 const hint = await problemsService.requestHint({ userId, problemId, stage });
@@ -49,3 +25,26 @@ export const requestHint = async (req, res, next) => {
                 next(error);
         }
 };
+// export const listProblems = async (req, res, next) => {
+//         try {
+//                 const userId = req.user.id;
+//                 const filters = req.query;
+//                 const problems = await problemsService.findProblemsWithFilters(userId, filters);
+//                 res.json({ success: true, data : problems });
+//         } catch (error) {
+//                 next(error);
+//         }
+// };
+
+// export const getProblem = async (req, res, next) => {
+//         try {
+//                 const problemId = req.params.id;
+//                 const problem = await problemsService.getProblemById(problemId);
+//                 if (!problem) {
+//                         return res.status(404).json({ success: false, message: "Problem not found" });
+//                 }
+//                 res.json({ success: true, data: problem });
+//         } catch (error) {
+//                 next(error);
+//         }
+// };

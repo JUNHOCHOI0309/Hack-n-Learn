@@ -10,7 +10,7 @@ import TechniqueContent from "../models/techniqueContent.model.js";
  */
 export const listTechniques = async () => {
   // 최소한의 필드만 반환해서 페이징/정렬에 유리하게 구성
-  return Technique.find({}, { title: 1, slug: 1, description: 1, createdAt: 1, updatedAt: 1 })
+  return Technique.find({}, { title: 1, slug: 1, level: 1, description: 1, createdAt: 1 })
     .sort({ createdAt: -1 })
     .lean();
 };
@@ -40,7 +40,7 @@ export const getTechniqueDetail = async (slug) => {
 
 
 /**
- * 특정 레벨의 상세 정보 조회
+ * 이론 예제 코드 갖고 오기
  * techniqueId: ObjectId or slug
  * levelId: level document _id
  */

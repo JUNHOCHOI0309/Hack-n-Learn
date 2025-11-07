@@ -6,11 +6,133 @@ import mongoose from "mongoose";
 import Practice from "../models/practice.model.js";
 import Problem from "../models/problem.model.js";
 import * as problemController from "../controllers/problems.controller.js";
-import requireLogin from "../middlewares/auth.middleware.js";
-import { validateQuery, validateBody } from "../middlewares/validateQuery.js";
+import { validateBody } from "../middlewares/validateQuery.js";
 
 
 const router = Router();
+/**
+ * @swagger
+ * tags:
+ *   name: Problems
+ *   description: 실습 문제(Practice Lab) 관련 API
+ */
+
+/**
+ * @swagger
+ * /api/problems/{slug}/submit:
+ *   post:
+ *     summary: 실습 문제 플래그 제출
+ *     tags: [Problems]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 문제의 slug (예: `sql-injection`, `xss-basic`)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - flag
+ *             properties:
+ *               flag:
+ *                 type: string
+ *                 example: FLAG{HacknLearn}
+ *                 description: 사용자가 제출하는 문제의 플래그 문자열
+ *     responses:
+ *       200:
+ *         description: 플래그 제출 결과 (정답 여부 및 획득 점수)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     correct:
+ *                       type: boolean
+ *                       example: true
+ *                       description: 정답 여부
+ *                     gained:
+ *                       type: number
+ *                       example: 90
+ *                       description: 감점 반영 후 획득 점수
+ *                     message:
+ *                       type: string
+ *                       example: 정답입니다!
+ */
+
+/**
+ * @swagger
+ * /api/problems/{slug}/request-hint:
+ *   post:
+ *     summary: 실습 문제 힌트 요청
+ *     tags: [Problems]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 문제의 slug (예: `sql-injection`, `xss-basic`)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               stage:
+ *                 type: integer
+ *                 example: 1
+ *                 description: 요청하는 힌트 단계 (1, 2, 3 ...)
+ *     responses:
+ *       200:
+ *         description: 요청한 힌트와 감점 정보 반환
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     hint:
+ *                       type: string
+ *                       example: "입력값이 그대로 쿼리에 들어가고 있지 않은지 확인해보세요."
+ *                     penaltyApplied:
+ *                       type: number
+ *                       example: 10
+ *                       description: 이번 요청으로 인한 감점량
+ *                     totalPenalty:
+ *                       type: number
+ *                       example: 20
+ *                       description: 누적 감점
+ *                     usedHint:
+ *                       type: number
+ *                       example: 2
+ *                       description: 사용한 힌트 수
+ *                     remainingPotentialScore:
+ *                       type: number
+ *                       example: 80
+ *                       description: 남은 최대 획득 가능 점수
+ */
+
 const execPromise = util.promisify(exec);
 
 const PORT_RANGE = { min: 8100, max: 8200 };
@@ -25,8 +147,6 @@ function getAvailablePort() {
         }
         throw new Error("No available ports");
 }
-router.get("/", validateQuery('getProblems'), problemController.listProblems);
-router.get("/:id", validateQuery('getProblemById'), problemController.getProblem);
 
 router.post("/:id/start-lab", async( req, res) => { // requireLogin 추가
         try{
@@ -150,11 +270,7 @@ router.get("/running-labs", async (req, res) => { // requireLogin 추가
 
 
 
-router.post("/:id/submit", validateBody('submitFlag'), problemController.submitFlag);
-router.post("/:id/request-hint", validateBody('requestHint'), problemController.requestHint);
+router.post("/:slug/submit", validateBody('submitFlag'), problemController.submitFlag);
+router.post("/:slug/request-hint", validateBody('requestHint'), problemController.requestHint);
 
-// router.get("/", requireLogin, validateQuery('getProblems'), problemController.listProblems);
-// router.get("/:id", requireLogin, validateQuery('getProblemById'), problemController.getProblem);
-// router.post("/:id/submit", requireLogin, validateBody('submitFlag'), problemController.submitFlag);
-// router.post("/:id/request-hint", requireLogin, validateBody('requestHint'), problemController.requestHint);
 export default router;
