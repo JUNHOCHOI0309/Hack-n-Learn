@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import axios from 'axios';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import AuthInput from '../../components/AuthInput';
 import Button from '../../components/Button';
 import SocialButton from '../../components/SocialButton';
 import FormErrorMessage from '../../components/FormErrorMessage';
-import { useAuth } from '../../contexts/AuthContext'; // Import useAuth
+import { useAuthStore } from '../../store/authStore'; // Import useAuthStore
+import axios from 'axios'; // Keep axios for error handling
+import { useState } from 'react';
 
 type ILoginFormInput = {
   username: string;
@@ -21,23 +21,21 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm<ILoginFormInput>();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
-  const { fetchUser } = useAuth(); // Get fetchUser from context
+
+  // Get login action and isLoading state from Zustand store
+  const login = useAuthStore((state) => state.login);
+  const isLoading = useAuthStore((state) => state.isLoading);
 
   const onSubmit: SubmitHandler<ILoginFormInput> = async (data) => {
-    setIsLoading(true);
     setApiError(null);
     try {
-      await axios.post('/api/auth/login', {
-        id: data.username,
-        password: data.password,
-      });
-
-      // After successful login, fetch the user data to update the context
-      await fetchUser();
-
-      navigate('/'); // Redirect to home page or dashboard
+      const success = await login(data.username, data.password);
+      if (success) {
+        navigate('/'); // Redirect to home page or dashboard
+      } else {
+        setApiError('로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.'); // Generic error for failed login
+      }
     } catch (err: any) {
       console.error(err);
       if (axios.isAxiosError(err) && err.response) {
@@ -45,8 +43,6 @@ export default function LoginPage() {
       } else {
         setApiError(err.message);
       }
-    } finally {
-      setIsLoading(false);
     }
   };
 

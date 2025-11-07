@@ -1,7 +1,13 @@
 import { StrictMode } from 'react';
 import './styles/index.css';
 import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'; // Import createBrowserRouter and RouterProvider
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import axios from 'axios'; // Import axios
+import { setupAxiosInterceptor } from './utils/axiosInterceptor'; // Import the interceptor setup
+
+// Configure axios to send cookies with requests
+axios.defaults.withCredentials = true;
+setupAxiosInterceptor(); // Set up the Axios interceptor
 
 // Import all page components
 import App from './App';

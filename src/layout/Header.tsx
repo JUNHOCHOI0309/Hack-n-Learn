@@ -1,12 +1,11 @@
 import { Bell, User } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import logo from '../assets/images/logo.png';
-import { useAuth } from '../contexts/AuthContext';
-import axios from 'axios';
+import { useAuthStore } from '../store/authStore';
 
 export default function Header() {
   const location = useLocation();
-  const { user, fetchUser } = useAuth();
+  const { isAuthenticated, user, logout } = useAuthStore();
 
   const navLinks = [
     { name: '서비스 소개', path: '/about' },
@@ -17,12 +16,7 @@ export default function Header() {
   ];
 
   const handleLogout = async () => {
-    try {
-      await axios.post('/api/auth/logout');
-      await fetchUser(); // Refetch user info, which will set user to null
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
+    await logout();
   };
 
   return (
@@ -48,12 +42,12 @@ export default function Header() {
           ))}
         </div>
         <div className="flex items-center space-x-4 text-primary-text">
-          {user ? (
+          {isAuthenticated ? (
             <>
               <Bell />
               <Link to="/mypage" className="flex items-center space-x-1">
                 <User />
-                <span>{user.nickname}님</span>
+                <span>{user?.username}님</span>
               </Link>
               <button
                 onClick={handleLogout}
