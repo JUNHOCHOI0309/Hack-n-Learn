@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import axios from 'axios';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import AuthInput from '../components/AuthInput';
-import Button from '../components/Button';
-import SocialButton from '../components/SocialButton';
-import FormErrorMessage from '../components/FormErrorMessage';
+import AuthInput from '../../components/AuthInput';
+import Button from '../../components/Button';
+import SocialButton from '../../components/SocialButton';
+import FormErrorMessage from '../../components/FormErrorMessage';
 
 type ILoginFormInput = {
   username: string;
@@ -22,34 +23,27 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
-  const onSubmit: SubmitHandler<ILoginFormInput> = async data => {
+  const onSubmit: SubmitHandler<ILoginFormInput> = async (data) => {
     setIsLoading(true);
     setApiError(null);
     try {
-      const response = await fetch('https://hacknlearn.site/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: data.username, // Assuming backend expects 'id' for username
-          password: data.password,
-        }),
+      const response = await axios.post('/api/auth/login', {
+        id: data.username,
+        password: data.password,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || '로그인에 실패했습니다.');
-      }
-
-      // Assuming the backend returns a token or user info on successful login
-      const result = await response.json();
-      // TODO: Store the authentication token (e.g., in localStorage or a cookie)
-      console.log('Login successful:', result);
+      // Assuming the backend returns user info on successful login
+      const userData = response.data;
+      console.log('Login successful:', userData);
 
       navigate('/'); // Redirect to home page or dashboard
     } catch (err: any) {
-      setApiError(err.message);
+      console.error(err);
+      if (axios.isAxiosError(err) && err.response) {
+        setApiError(err.response.data.message || err.message);
+      } else {
+        setApiError(err.message);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -95,34 +89,34 @@ export default function LoginPage() {
               <span className="text-primary-text">계정 저장</span>
             </label>
             {apiError && <FormErrorMessage message={apiError} />}
-            <Button type="submit" variant="primary" className="w-full" disabled={isLoading}>
+            <Button
+              type="submit"
+              variant="primary"
+              className="w-full"
+              disabled={isLoading}
+            >
               {isLoading ? '로그인 중...' : '로그인'}
             </Button>
-            <p className=" text-primary-text">
-              계정을 잊으셨나요?
-              <a href="#" className="text-accent-primary1 ml-2">
-                →
-              </a>
-            </p>
+            <button
+              type="button"
+              className="text-primary-text hover:text-accent-primary1"
+              onClick={() => navigate('/password-reset')}
+            >
+              계정을 잊으셨나요? →
+            </button>
           </div>
         </form>
         <div className="space-y-4 mt-20">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <SocialButton
               provider="google"
-              onClick={() =>
-                (window.location.href =
-                  'https://hacknlearn.site/api/auth/google')
-              }
+              onClick={() => (window.location.href = '/api/auth/google')}
             >
               Google로 로그인
             </SocialButton>
             <SocialButton
               provider="github"
-              onClick={() =>
-                (window.location.href =
-                  'https://hacknlearn.site/api/auth/github')
-              }
+              onClick={() => (window.location.href = '/api/auth/github')}
             >
               Github으로 로그인
             </SocialButton>

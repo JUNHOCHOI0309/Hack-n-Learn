@@ -9,7 +9,7 @@ const FormErrorMessage: React.FC<FormErrorMessageProps> = ({ message }) => {
     return null;
   }
 
-  return <p className="text-accent-warning text-sm ">{message}</p>;
+  return <p className="text-accent-warning text-sm">{message}</p>;
 };
 
 export default FormErrorMessage;

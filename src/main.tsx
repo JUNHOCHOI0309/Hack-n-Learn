@@ -20,10 +20,12 @@ import CommunityPostDetailPage from './pages/CommunityPostDetailPage';
 import RankingPage from './pages/RankingPage';
 import MyPage from './pages/MyPage';
 
-import SignupPage from './pages/SignupPage';
+import SignupPage from './pages/auth/SignupPage';
 import ChallengeResultPage from './pages/ChallengeResultPage'; // Import ChallengeResultPage
 import QnaDetailPage from './pages/QnaDetailPage';
-import LoginPage from './pages/LoginPage';
+import LoginPage from './pages/auth/LoginPage';
+import PasswordResetPage from './pages/auth/PasswordResetPage';
+import ChangePasswordPage from './pages/auth/ChangePasswordPage';
 
 const router = createBrowserRouter([
   {
@@ -53,6 +55,8 @@ const router = createBrowserRouter([
       { path: 'ranking', element: <RankingPage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'signup', element: <SignupPage /> },
+      { path: 'password-reset', element: <PasswordResetPage /> },
+      { path: 'change-password', element: <ChangePasswordPage /> },
       { path: 'mypage', element: <MyPage /> },
     ],
   },
