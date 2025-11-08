@@ -1,33 +1,41 @@
-import { useForm, type SubmitHandler } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
 import AuthInput from '../../components/AuthInput';
 import Button from '../../components/Button';
 import FormErrorMessage from '../../components/FormErrorMessage';
+import axios from 'axios';
 
 type IPasswordResetFormInput = {
+  id: string;
   email: string;
-  authCode: string;
 };
 
 export default function PasswordResetPage() {
-  const navigate = useNavigate();
-
   const {
     register,
-    handleSubmit,
     formState: { errors },
+    getValues,
   } = useForm<IPasswordResetFormInput>();
 
-  const onSubmit: SubmitHandler<IPasswordResetFormInput> = (data) => {
-    // TODO: Implement email verification and password reset logic
-    console.log(data);
-    alert('Password reset logic to be implemented.');
-    navigate('/change-password');
-  };
-
-  const handleSendCode = () => {
-    // TODO: Implement logic to send verification code
-    alert('Verification code sent to email.');
+  const handleSendEmail = async () => {
+    const { id, email } = getValues();
+    if (!id) {
+      alert('아이디를 입력해주세요.');
+      return;
+    }
+    if (!email) {
+      alert('이메일을 입력해주세요.');
+      return;
+    }
+    try {
+      await axios.post('/api/auth/reset-password', {
+        id,
+        email,
+      });
+      alert('비밀번호 재설정 이메일이 발송되었습니다. 이메일을 확인해주세요.');
+    } catch (error) {
+      console.error('비밀번호 재설정 이메일 발송 실패:', error);
+      alert('비밀번호 재설정 이메일 발송에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   return (
@@ -41,8 +49,17 @@ export default function PasswordResetPage() {
             메일을 인증하면 메일이 발송돼요
           </p>
         </div>
-        <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
-          <div className="flex items-center gap-3">
+        <form className="space-y-8">
+          <div className="flex flex-col gap-8">
+            <AuthInput
+              id="id"
+              type="text"
+              placeholder="아이디"
+              {...register('id', {
+                required: '아이디는 필수입니다.',
+              })}
+            />
+            {errors.id && <FormErrorMessage message={errors.id.message} />}
             <AuthInput
               id="email"
               type="email"
@@ -55,25 +72,17 @@ export default function PasswordResetPage() {
                 },
               })}
             />
-            <Button type="button" variant="secondary" onClick={handleSendCode}>
+            <Button
+              className="w-full"
+              type="button"
+              variant="primary"
+              onClick={handleSendEmail}
+            >
               인증
             </Button>
-          </div>
-          {errors.email && <FormErrorMessage message={errors.email.message} />}
-
-          <AuthInput
-            id="authCode"
-            placeholder="인증 번호"
-            {...register('authCode', { required: '인증 번호는 필수입니다.' })}
-          />
-          {errors.authCode && (
-            <FormErrorMessage message={errors.authCode.message} />
-          )}
-
-          <div className="pt-10">
-            <Button type="submit" variant="secondary" className="w-full">
-              메일 확인
-            </Button>
+            {errors.email && (
+              <FormErrorMessage message={errors.email.message} />
+            )}
           </div>
         </form>
       </div>

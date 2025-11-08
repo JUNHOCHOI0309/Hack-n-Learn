@@ -47,7 +47,7 @@ export default function Header() {
               <Bell />
               <Link to="/mypage" className="flex items-center space-x-1">
                 <User />
-                <span>{user?.username}님</span>
+                <span>{user?.nickname}님</span>
               </Link>
               <button
                 onClick={handleLogout}

@@ -32,6 +32,7 @@ import QnaDetailPage from './pages/QnaDetailPage';
 import LoginPage from './pages/auth/LoginPage';
 import PasswordResetPage from './pages/auth/PasswordResetPage';
 import ChangePasswordPage from './pages/auth/ChangePasswordPage';
+import FindIdPage from './pages/auth/FindIdPage';
 
 const router = createBrowserRouter([
   {
@@ -61,6 +62,7 @@ const router = createBrowserRouter([
       { path: 'ranking', element: <RankingPage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'signup', element: <SignupPage /> },
+      { path: 'find-id', element: <FindIdPage /> },
       { path: 'password-reset', element: <PasswordResetPage /> },
       { path: 'change-password', element: <ChangePasswordPage /> },
       { path: 'mypage', element: <MyPage /> },

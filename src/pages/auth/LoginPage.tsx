@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import AuthInput from '../../components/AuthInput';
 import Button from '../../components/Button';
 import SocialButton from '../../components/SocialButton';
-import FormErrorMessage from '../../components/FormErrorMessage';
 import { useAuthStore } from '../../store/authStore'; // Import useAuthStore
 import axios from 'axios'; // Keep axios for error handling
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import FormErrorMessage from '../../components/FormErrorMessage';
 
 type ILoginFormInput = {
   username: string;
@@ -21,28 +21,45 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm<ILoginFormInput>();
   const navigate = useNavigate();
-  const [apiError, setApiError] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Get login action and isLoading state from Zustand store
   const login = useAuthStore((state) => state.login);
   const isLoading = useAuthStore((state) => state.isLoading);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
 
   const onSubmit: SubmitHandler<ILoginFormInput> = async (data) => {
-    setApiError(null);
+    setErrorMessage(null);
     try {
       const success = await login(data.username, data.password);
       if (success) {
         navigate('/'); // Redirect to home page or dashboard
       } else {
-        setApiError('로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.'); // Generic error for failed login
+        const errorMsg =
+          '로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.';
+        setErrorMessage(errorMsg); // Generic error for failed login
+        alert(errorMsg); // Show alert for failed login
       }
     } catch (err: any) {
       console.error(err);
+      let errorMsg = '로그인 요청에 실패했습니다.';
       if (axios.isAxiosError(err) && err.response) {
-        setApiError(err.response.data.message || err.message);
+        if (err.response.status === 500) {
+          errorMsg = '아이디 또는 비밀번호가 일치하지 않습니다.';
+        } else {
+          errorMsg = err.response.data.message || err.message;
+        }
       } else {
-        setApiError(err.message);
+        errorMsg = err.message;
       }
+      setErrorMessage(errorMsg);
+      console.log('Attempting to show alert:', errorMsg);
     }
   };
 
@@ -85,7 +102,7 @@ export default function LoginPage() {
               />
               <span className="text-primary-text">계정 저장</span>
             </label>
-            {apiError && <FormErrorMessage message={apiError} />}
+            {errorMessage && <FormErrorMessage message={errorMessage} />}
             <Button
               type="submit"
               variant="primary"
@@ -97,7 +114,7 @@ export default function LoginPage() {
             <button
               type="button"
               className="text-primary-text hover:text-accent-primary1"
-              onClick={() => navigate('/password-reset')}
+              onClick={() => navigate('/find-id')}
             >
               계정을 잊으셨나요? →
             </button>

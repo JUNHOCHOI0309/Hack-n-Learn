@@ -1,8 +1,10 @@
 import { useForm, type SubmitHandler } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import AuthInput from '../../components/AuthInput';
 import Button from '../../components/Button';
 import FormErrorMessage from '../../components/FormErrorMessage';
+import axios from 'axios';
+import { useState } from 'react';
 
 type IChangePasswordFormInput = {
   password: string;
@@ -17,13 +19,27 @@ export default function ChangePasswordPage() {
     formState: { errors },
   } = useForm<IChangePasswordFormInput>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const password = watch('password');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const onSubmit: SubmitHandler<IChangePasswordFormInput> = (data) => {
-    // TODO: Implement password change logic
-    console.log(data);
-    alert('Password has been changed successfully!');
-    navigate('/login');
+  const onSubmit: SubmitHandler<IChangePasswordFormInput> = async (data) => {
+    const token = searchParams.get('token');
+    if (!token) {
+      setErrorMessage('유효하지 않은 접근입니다. 다시 시도해주세요.');
+      return;
+    }
+
+    try {
+      await axios.post(`/api/auth/reset-password/${token}`, {
+        newPassword: data.password,
+      });
+      alert('비밀번호가 성공적으로 변경되었습니다!');
+      navigate('/login');
+    } catch (error) {
+      setErrorMessage('비밀번호 변경에 실패했습니다. 다시 시도해주세요.');
+      console.error('Password change failed:', error);
+    }
   };
 
   return (
@@ -73,6 +89,8 @@ export default function ChangePasswordPage() {
           {errors.passwordConfirm && (
             <FormErrorMessage message={errors.passwordConfirm.message} />
           )}
+
+          {errorMessage && <FormErrorMessage message={errorMessage} />}
 
           <div className="pt-6">
             <Button type="submit" variant="primary" className="w-full">
