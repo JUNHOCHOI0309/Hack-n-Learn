@@ -497,11 +497,14 @@ router.post("/reset-password/:token", async (req, res, next)=> {
  *         application/json:
  *           schema:
  *             type: object
- *             required: [newPassword]
+ *             required: [newPassword, token]
  *             properties:
  *               newPassword:
  *                 type: string
  *                 example: "newStrongPassword!"
+ *               token:
+ *                 type: string
+ *                 example: "f404b6a4448dded1ad171300b9a457949bfe15e3f2febbd0c6375f40866561cb"
  *     responses:
  *       200:
  *         description: 비밀번호 변경 성공
