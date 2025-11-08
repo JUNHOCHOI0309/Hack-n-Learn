@@ -30,7 +30,7 @@ export async function chatCompletion({
                 model,
                 messages,
                 temperature,
-                max_tokens: maxTokens,
+                max_completion_tokens: maxTokens,
         });
 
         const choice = resp?.choices?.[0]?.message?.content || "";
@@ -156,8 +156,8 @@ export async function analyzeAnswersBatch({
                                                 model,
                                                 messages,
                                                 temperature: 0.0,
-                                                max_tokens : Number(process.env.AI_MAX_TOKENS) || 1500,
-                                                response_format: { type: "json" },
+                                                max_completion_tokens : Number(process.env.AI_MAX_TOKENS) || 1500,
+                                                response_format: { type: "json_object" },
                                         });
                                         text = String(r.choices?.[0]?.message?.content ?? "");
                                 }
