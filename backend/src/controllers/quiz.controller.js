@@ -43,11 +43,11 @@ export async function getWrongNotes(req, res, next) {
                 const userId = req.session?.userId;
                 if(!userId) return res.status(401).json({ success: false, message: "로그인이 필요합니다." });
 
-                const { techniqueId, levelId } = req.query;
+                const { techniqueId } = req.query;
                 const page = parseInt(req.query.page || "1" , 10);
                 const size = parseInt(req.query.size || "20", 10);
 
-                const result = await quizService.listWrongNotes({ userId, techniqueId, levelId, page, size });
+                const result = await quizService.listWrongNotes({ userId, techniqueId, page, size });
                 return res.json({ success: true, data: result.items, meta: result.meta });
         } catch(err){
                 next(err);

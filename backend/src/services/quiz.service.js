@@ -33,7 +33,7 @@ export async function listQuizzesBySlug(slug){
 
         const { technique } = ref;
         const quizzes = await Quiz.find({ techniqueId: technique._id })
-        .select("techniqueId levelId question choices explanation source")
+        .select("techniqueId questionParts correctAnswer explanation")
         .sort({ createdAt: -1 })
         .lean();
         return { technique, quizzes };
@@ -51,11 +51,13 @@ export async function checkAnswerAndAward({ userId, quizId, userAnswer }){
                         userId,
                         quizId: quiz._id,
                         techniqueId: quiz.techniqueId,
-                        question: quiz.question,
-                        choices: quiz.choices,
+                        rawQuestion: quiz.rawQuestion,
+                        questionParts: quiz.questionParts || [],
+                        questionType: quiz.questionType || "short",
+                        choices: quiz.choices || [],
                         userAnswer: userAnswer,
                         correctAnswer: quiz.correctAnswer,
-                        explanation: quiz.explanation
+                        explanation: quiz.explanation || "",
                 });
         }
         
@@ -93,7 +95,7 @@ export async function listWrongNotes({ userId, techniqueId,page=1, size =20 }){
                         .sort({ createdAt: -1 })
                         .skip(skip)
                         .limit(size)
-                        .select("quizId techniqueId question choices userAnswer correctAnswer explanation createdAt")
+                        .select("quizId userId techniqueId rawQuestion userAnswer correctAnswer explanation")
                         .lean(),
                 WrongNote.countDocuments(query)
         ]);
@@ -111,17 +113,18 @@ export async function buildResultExplanation({ userId, slug}){
         const totalCount = await Quiz.countDocuments({ techniqueId: technique._id });
 
         const wrongs = await WrongNote.find({ userId, techniqueId: technique._id })
-                .select("_id quizId question choices userAnswer correctAnswer explanation")
+                .select("_id quizId rawQuestion userAnswer correctAnswer explanation")
                 .lean();
 
         const items = wrongs.map((w) => ({
                 quizId: String(w.quizId ?? w._id),
-                question: w.question ?? "",
-                choices: Array.isArray(w.choices) ? w.choices : [],
+                question: w.rawQuestion ?? "",
                 userAnswer: String(w.userAnswer ?? null),
                 correctAnswer: String(w.correctAnswer ?? null),
                 explanation: String(w.explanation ?? ""),
         }));
+
+        console.log(`${items.length} wrong answers found for technique ${technique.title} (${technique._id}) by user ${userId}`);
 
         const aiPayload = { userId: String(userId), items};
 
@@ -130,7 +133,7 @@ export async function buildResultExplanation({ userId, slug}){
         try{
                 aiResult = await analyzeAnswersBatch({
                         payload : aiPayload,
-                        model : process.env.EXPLAIN_MODEL || "gpt-5-main",
+                        model : process.env.EXPLAIN_MODEL || "gpt-5",
                         timeoutMs : parseInt(process.env.EXPLAIN_TIMEOUT_MS) || 12000,
                 });
         }catch(error){
@@ -143,7 +146,7 @@ export async function buildResultExplanation({ userId, slug}){
                                 summary: "AI 응답 실패로 간단 요약만 제공합니다.",
                                 focusAreas: [],
                                 nextSteps: ["모델 호출 오류 — 잠시 후 재시도하세요."],
-                                model: process.env.EXPLAIN_MODEL || "gpt-5-main",
+                                model: process.env.EXPLAIN_MODEL || "gpt-5",
                                 stats: { totalCount, correctCount: Math.max(0, totalCount - items.length), wrongCount: items.length },
                                 createdAt: new Date(),
                         },
@@ -187,7 +190,7 @@ export async function buildResultExplanation({ userId, slug}){
                                 : `해당 레벨에서 오답이 없습니다. 학습을 유지하세요.`,
                         focusAreas,
                         nextSteps,
-                        model: process.env.EXPLAIN_MODEL || "gpt-5-main",
+                        model: process.env.EXPLAIN_MODEL || "gpt-5",
                         stats: { totalCount, correctCount, wrongCount },
                         createdAt: new Date(),
                         perQuestionResults: results, // raw per-question AI results for frontend if needed  

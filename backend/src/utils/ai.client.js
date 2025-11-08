@@ -8,6 +8,8 @@ if (!OPENAI_API_KEY) { console.warn("Warning: OPENAI_API_KEY is not set in envir
 
 const client = new OPENAI({ apiKey: OPENAI_API_KEY });
 
+const isResponsesPreferred = (model) => /^gpt-4o(?!-chat)/.test(model || "");
+
 /**
  * 일반 챗봇용 호출자
  * @param {Object} p
@@ -61,6 +63,26 @@ function extractJsonSubstring(s) {
         return s.slice(first, last + 1);
 }
 
+function sanitizeResult(r) {
+  return {
+    questionId: r?.questionId ?? null,
+    reasonSummary: maskSecrets(r?.reasonSummary ?? null),
+    mistakeAnalysis: Array.isArray(r?.mistakeAnalysis) ? r.mistakeAnalysis.map(maskSecrets) : [],
+    stepByStepSolution: Array.isArray(r?.stepByStepSolution) ? r.stepByStepSolution.map(maskSecrets) : [],
+    learningTips: r?.learningTips ?? null,
+  };
+}
+
+function fallbackFromItem(it) {
+  return {
+    questionId: it.questionId ?? null,
+    reasonSummary: null,
+    mistakeAnalysis: [],
+    stepByStepSolution: [],
+    learningTips: null,
+  };
+}
+
 function buildSystemPrompt(){
         return [
                 {
@@ -97,7 +119,7 @@ export async function analyzeAnswersBatch({
                 throw new Error("Invalid payload: expected { userId, items: [] }");
         }
 
-        const batchMax = Number(process.env.EXPLAIN_BATCH_MAX) || 10; //env 추가해야 됨
+        const batchMax = 10;
         const items = payload.items;
         const chunks = [];
         for(let i=0; i<items.length; i+=batchMax){
@@ -110,91 +132,62 @@ export async function analyzeAnswersBatch({
                 const chunkPayload = { userId: payload.userId, items: chunkItems };
 
                 let attempt = 0;
-                let lastErr = null;
                 let parsed = null;
 
                 while(attempt <= maxRetries){
                         attempt++;
                         const controller = new AbortController();
-                        const to = setTimeout(() => controller.abort(), timeoutMs);
+                        const timer = setTimeout(() => controller.abort(), timeoutMs);
 
                         try{
                                 const messages = [
                                         ...buildSystemPrompt(),
                                         buildUserPrompt(chunkPayload),
                                 ];
+                                let text;
+                                if(isResponsesPreferred(model)){
+                                        const r = await client.responses.create({
+                                                model,
+                                                input: messages,
+                                        });
+                                        text = String(r.output_text ?? "");
+                                } else {
+                                        const r = await client.chat.completions.create({
+                                                model,
+                                                messages,
+                                                temperature: 0.0,
+                                                max_tokens : Number(process.env.AI_MAX_TOKENS) || 1500,
+                                                response_format: { type: "json" },
+                                        });
+                                        text = String(r.choices?.[0]?.message?.content ?? "");
+                                }
 
-                                const resp = await client.chat.completions.create({
-                                        model,
-                                        messages,
-                                        temperature: 0.0,
-                                        max_tokens : Number(process.env.EXPLAIN_MAX_TOKENS) || 1500,
-                                });
+                                clearTimeout(timer);
 
-                                clearTimeout(to);
-
-                                const text = String(resp.choices?.[0]?.message?.content || "");
                                 const candidate = extractJsonSubstring(text) ?? text;
-
                                 const candidateMasked = maskSecrets(candidate);
 
                                 try {
                                         const json = JSON.parse(candidateMasked);
-
-                                        if(!json || !Array.isArray(json.results)){
-                                                if(Array.isArray(json)){
-                                                        parsed = { results: json };
-                                                } else {
-                                                        parsed = null;
-                                                }
-                                        } else {
-                                                parsed = json;
-                                        }
-                                } catch(parseErr){
+                                        parsed = Array.isArray(json?.results) ? json : Array.isArray(json) ? { results: json } : null;
+                                } catch(_){
                                         parsed = null;
                                 }
 
                                 if(parsed) {
-                                        const safeResults = parsed.results.map((r) => ({
-                                                questionId: r?.questionId ?? null,
-                                                isCorrect: typeof r?.isCorrect === "boolean" ? r.isCorrect : null,
-                                                correctAnswer: r?.correctAnswer ?? null,
-                                                userAnswer: r?.userAnswer ?? null,
-                                                reasonSummary: maskSecrets(r?.reasonSummary ?? null),
-                                                mistakeAnalysis: Array.isArray(r?.mistakeAnalysis) ? r.mistakeAnalysis.map(maskSecrets) : [],
-                                                stepByStepSolution: Array.isArray(r?.stepByStepSolution) ? r.stepByStepSolution.map(maskSecrets) : [],
-                                                difficulty: ["easy", "medium", "hard"].includes(r?.difficulty) ? r.difficulty : null,
-                                                confidence: typeof r?.confidence === "number" ? Math.max(0, Math.min(1, r.confidence)) : null,
-                                                learningTips: r?.learningTips ?? null,
-                                                references: Array.isArray(r?.references) ? r.references.map(maskSecrets) : [],
-                                                explainLikeIm5: maskSecrets(r?.explainLikeIm5 ?? null),
-                                        }));
-                                        aggregatedResults.push(...safeResults);
+                                        aggregatedResults.push(...parsed.results.map(sanitizeResult));
                                         break;
+                                } else {
+                                        console.warn("[AI][parse] JSON 파싱 실패. model=%s, len=%d, textSnippet=%s", model, candidateMasked?.length ?? 0, String(candidateMasked).slice(0, 200));
                                 }
-                                lastErr = new Error("Failed to parse AI response as valid JSON.");
                         } catch (err) {
-                                lastErr = err;
+                                console.error("[AI] 호출 오류: ", err?.message || err);
                         } finally {
-                                try { clearTimeout(to); } catch(_) {}
+                                try { clearTimeout(timer); } catch {}
                         }
                 }
                 if(!parsed){
-                        const fallback = chunkItems.map((it) => ({
-                                questionId: it.questionId ?? null,
-                                isCorrect: null,
-                                correctAnswer: it.correctAnswer ?? null,
-                                userAnswer: it.userAnswer ?? null,
-                                reasonSummary: null,
-                                mistakeAnalysis: [],
-                                stepByStepSolution: [],
-                                difficulty: null,
-                                confidence: null,
-                                learningTips: null,
-                                references: [],
-                                explainLikeIm5: null,
-                        }));
-                        aggregatedResults.push(...fallback);
+                        aggregatedResults.push(...chunkItems.map(fallbackFromItem));
                 }
         }
         return { results: aggregatedResults };
