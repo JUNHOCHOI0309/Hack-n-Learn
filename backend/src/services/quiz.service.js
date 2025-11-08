@@ -84,20 +84,21 @@ export async function checkAnswerAndAward({ userId, quizId, userAnswer }){
         };
 }
 
-export async function listWrongNotes({ userId, techniqueId,page=1, size =20 }){
+export async function listWrongNotes({ userId, slug,page=1, size =20 }){
         const query = { userId };
-        if(techniqueId) query.techniqueId = techniqueId;
+        const ref = await findTechniqueBySlug({ slug });
+        const { technique } = ref;
 
         const skip = (page -1) * size;
 
         const [ items, total ] = await Promise.all([
-                WrongNote.find(query)
+                WrongNote.find({ techniqueId: technique._id , ...query })
                         .sort({ createdAt: -1 })
                         .skip(skip)
                         .limit(size)
                         .select("quizId userId techniqueId rawQuestion userAnswer correctAnswer explanation")
                         .lean(),
-                WrongNote.countDocuments(query)
+                WrongNote.countDocuments({ techniqueId: technique._id , ...query })
         ]);
 
         return { items, meta: { page, size, total }};

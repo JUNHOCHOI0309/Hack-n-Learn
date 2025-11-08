@@ -98,8 +98,8 @@ const router = express.Router();
  *                       type: boolean
  *                       example: true
  *                     correctAnswer:
- *                       type: integer
- *                       example: 1
+ *                       type: String
+ *                       example: "2"
  *                     explanation:
  *                       type: string
  *                       example: "Prepared Statement를 사용해야 SQL Injection을 예방할 수 있습니다."
@@ -115,27 +115,16 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/theory/quiz/{quizId}/wrong-notes:
- *   get:
+ * /api/theory/wrong-notes/{slug}:
+ *   post:
  *     summary: 오답노트 조회 (기법·레벨별 필터 가능)
  *     tags: [Quiz]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: quizId
- *         required: false
- *         schema:
- *           type: string
- *         description: 특정 퀴즈 ID (선택)
- *       - in: query
- *         name: techniqueId
- *         required: false
- *         schema:
- *           type: string
- *       - in: query
- *         name: levelId
- *         required: false
+ *         name: slug
+ *         required: true
  *         schema:
  *           type: string
  *       - in: query
@@ -286,8 +275,8 @@ router.get("/quiz/:slug", requireLogin, quizController.getQuizzesBySlug);
 router.post("/quiz/:quizId/check", requireLogin, quizController.checkAnswerAndAward);
 
 // 오답노트 조회 (필터: techniqueId, levelId)
-// GET /api/theory/quiz/:quizId/wrong-notes
-router.get("/quiz/:quizId/wrong-notes", requireLogin, quizController.getWrongNotes);
+// POST /api/theory/wrong-notes/:slug
+router.post("/wrong-notes/:slug", requireLogin, quizController.getWrongNotes);
 
 // 퀴즈 결과 해설 생성 요청
 // POST /api/theory/quiz/:slug/result-explanation
