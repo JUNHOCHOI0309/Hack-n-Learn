@@ -16,7 +16,7 @@ const isResponsesPreferred = (model) => /^gpt-4o(?!-chat)/.test(model || "");
  * @param {Array<{role:'system'|'user'|'assistant', content:string}>} p.messages
  * @param {string} [p.model=process.env.CHAT_MODEL || 'gpt-5']
  * @param {number} [p.maxTokens=process.env.CHAT_MAX_TOKENS || 600]
- * @param {number} [p.temperature=0.2]
+ * @param {number} [p.temperature=1]
  * @returns {Promise<{text:string, model:string, usage?:{prompt:number, completion:number, total:number}}>}
  */
 
@@ -24,7 +24,7 @@ export async function chatCompletion({
         messages,
         model = process.env.CHAT_MODEL || "gpt-5",
         maxTokens = Number(process.env.CHAT_MAX_TOKENS) || 600,
-        temperature = 0.2,
+        temperature = 1,
 }) {
         const resp = await client.chat.completions.create({
                 model,
@@ -155,7 +155,7 @@ export async function analyzeAnswersBatch({
                                         const r = await client.chat.completions.create({
                                                 model,
                                                 messages,
-                                                temperature: 0.2,
+                                                temperature: 1,
                                                 max_completion_tokens : Number(process.env.AI_MAX_TOKENS) || 1500,
                                                 response_format: { type: "json_object" },
                                         });
