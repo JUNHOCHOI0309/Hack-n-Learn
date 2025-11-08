@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import OPENAI from "openai";
-dotenv.config();
+dotenv.config({path: process.env.ENV_PATH || "/backend/backend/.env"});
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
@@ -111,7 +111,7 @@ function buildUserPrompt(payload) {
 
 export async function analyzeAnswersBatch({
         payload,
-        model = process.env.EXPLAIN_MODEL || "gpt-5",
+        model = process.env.EXPLAIN_MODEL || "gpt-4o",
         timeoutMs = parseInt(process.env.EXPLAIN_TIMEOUT_MS) || 12000,
         maxRetries = 1,
 }) {
