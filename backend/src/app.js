@@ -41,7 +41,7 @@ app.use(
 
 initPassport();
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
+app.use("/api/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use("/api", routes);
 
 app.use(errorHandler);
