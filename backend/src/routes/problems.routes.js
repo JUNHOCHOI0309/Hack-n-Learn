@@ -2,9 +2,12 @@
 import { Router } from "express";
 import { exec } from "child_process";
 import util from "util";
+import fs from "fs";
+import path from "path";
 import mongoose from "mongoose";
 import Practice from "../models/practice.model.js";
 import Problem from "../models/problem.model.js";
+import requireLogin from "../middlewares/auth.middleware.js";
 import * as problemController from "../controllers/problems.controller.js";
 import { validateBody } from "../middlewares/validateQuery.js";
 
@@ -147,10 +150,11 @@ function getAvailablePort() {
         throw new Error("No available ports");
 }
 
-router.post("/:id/start-lab", async( req, res) => { // requireLogin 추가
+router.post("/:id/start-lab", requireLogin, async( req, res) => {
         try{
                 const { id } = req.params;
-                const userId = new mongoose.Types.ObjectId(); //req.user._id
+                const userId = req.user._id
+                
                 // 1. Problem 찾기 (ObjectId 또는 slug로)
                 let problem;
                 if (mongoose.Types.ObjectId.isValid(id)) {
@@ -232,10 +236,10 @@ router.post("/:id/start-lab", async( req, res) => { // requireLogin 추가
         }
 });     
 
-router.post("/:id/stop-lab", async( req, res) => {// requireLogin 추가
+router.post("/:id/stop-lab", requireLogin, async( req, res) => {
         try {
                 const { id } = req.params;
-                const userId = new mongoose.Types.ObjectId(); //req.user._id
+                const userId = req.user._id;
 
                 const practice = await Practice.findOne({ userId, problemId: id, status: 'running' });
                 if (!practice) return res.status(404).json({ success: false, message: "No running lab environment found." });
@@ -255,9 +259,9 @@ router.post("/:id/stop-lab", async( req, res) => {// requireLogin 추가
         }
 });
 
-router.get("/running-labs", async (req, res) => { // requireLogin 추가
+router.get("/running-labs", requireLogin, async (req, res) => {
         try {
-                const userId = new mongoose.Types.ObjectId(); //req.user._id
+                const userId = req.user._id;
                 const runningLabs = await Practice.find({ userId, status: 'running' });
                 res.json({ success: true, runningLabs });
         } catch (error) {
@@ -266,6 +270,45 @@ router.get("/running-labs", async (req, res) => { // requireLogin 추가
         }
 });
 
+router.get("/:slug/events", requireLogin, async (req, res) => {
+        try {
+                const { slug } = req.params;
+                const userId = req.user._id;
+
+                const problem = await Problem.findOne({ slug });
+                if( !problem ) return res.status(404).json({ success: false, message: "Problem not found." });
+
+                const practice = await Practice.findOne({ 
+                        userId, 
+                        problemId: problem._id,
+                        status : 'running'
+                 });
+                if( !practice ) return res.status(404).json({ success: false, message: "No running practice found for this problem." });
+                 
+                const containerPath = "/app/data/events.json"; // 컨테이너 내 이벤트 파일 경로
+
+                const tempDir = `/tmp/hacknlearn/${userId}`;
+                const tempPath = path.join( tempDir, `${slug}_events.json` );
+
+                fs.mkdirSync( tempDir, { recursive: true } );
+
+                const copyCmd = `docker cp ${practice.containerName}:${containerPath} ${tempPath}`;
+                await execPromise( copyCmd );
+
+                if( !fs.existsSync( tempPath )){
+                        return res.status(404).json({ success: false, message: "No event data found." });
+                }
+
+                res.download( tempPath, `${slug}_events.json`, ( err ) => {
+                        if( err ) console.error("Error sending event file:", err);
+                        fs.unlinkSync( tempPath, () => {});
+                });
+        } catch (error) {
+                console.error("Error fetching event data:", error);
+                res.status(500).json({ message: "Failed to fetch event data." });
+        
+        }
+});
 
 router.post("/:slug/submit", validateBody('submitFlag'), problemController.submitFlag);
 router.post("/:slug/request-hint", validateBody('requestHint'), problemController.requestHint);

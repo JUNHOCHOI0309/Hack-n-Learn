@@ -7,8 +7,9 @@ import MonogoStore from "connect-mongo";
 import helmet from "helmet";
 import { swaggerUi, specs } from "./config/swagger.js";
 import expressMongoSanitize from "@exortek/express-mongo-sanitize";
-import { errorHandler } from "./middlewares/auth.middleware.js";
+import { errorHandler, requireLogin } from "./middlewares/auth.middleware.js";
 import { initPassport } from "./config/passport.js";
+import internalRouter from "./routes/internal.routes.js";
 
 const app = express();
 const isProduction = process.env.NODE_ENV === "production";
@@ -43,6 +44,7 @@ initPassport();
 
 app.use("/api/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use("/api", routes);
+app.use("/internal", requireLogin, internalRouter);
 
 app.use(errorHandler);
 
