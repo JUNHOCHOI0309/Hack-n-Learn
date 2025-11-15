@@ -29,7 +29,7 @@ router.get("/link/github/callback",
  * @swagger
  * tags:
  *   name: MyPage
- *   description: 마이페이지 (사용자 프로필 및 학습 데이터)
+ *   description: 마이페이지 (사용자 프로필 및 학습 정보)
  */
 
 /**
@@ -42,7 +42,7 @@ router.get("/link/github/callback",
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: 사용자 프로필, 학습 진행률, 최근 실습 기록 반환
+ *         description: 사용자 프로필, 실전 문제 진행률, 이론 퀴즈 진행률 반환
  *         content:
  *           application/json:
  *             schema:
@@ -56,13 +56,11 @@ router.get("/link/github/callback",
  *                   properties:
  *                     profile:
  *                       $ref: '#/components/schemas/MyProfile'
- *                     progress:
- *                       $ref: '#/components/schemas/ProgressStats'
- *                     practiceList:
- *                       type: array
- *                       description: 최근 실습 기록 (최대 100개)
- *                       items:
- *                         $ref: '#/components/schemas/PracticeRecord'
+ *                     practice:
+ *                       $ref: '#/components/schemas/PracticeProgress'
+ *                     quizProgress:
+ *                       $ref: '#/components/schemas/QuizProgress'
+ *
  *       401:
  *         description: 인증되지 않은 사용자
  *       500:
@@ -73,6 +71,7 @@ router.get("/link/github/callback",
  * @swagger
  * components:
  *   schemas:
+ *
  *     MyProfile:
  *       type: object
  *       properties:
@@ -89,79 +88,136 @@ router.get("/link/github/callback",
  *         createdAt:
  *           type: string
  *           format: date-time
- *           example: "2025-01-15T10:12:34.000Z"
  *         lastLogin:
  *           type: string
  *           format: date-time
- *           example: "2025-10-10T23:40:00.000Z"
  *         isProfileComplete:
  *           type: boolean
  *           example: true
  *
- *     ProgressStats:
+ *     PracticeProgress:
  *       type: object
  *       properties:
  *         total:
  *           type: integer
- *           example: 87
+ *           example: 12
  *         successCount:
  *           type: integer
- *           example: 73
+ *           example: 8
  *         successRate:
  *           type: number
- *           format: float
- *           example: 0.839
+ *           example: 66
  *         typeStats:
  *           type: array
- *           description: 유형별 통계
+ *           description: 실전 문제 파트별 통계(slug 기반)
  *           items:
- *             $ref: '#/components/schemas/TypeStat'
+ *             $ref: '#/components/schemas/PracticeTypeStat'
+ *         practiceList:
+ *           type: array
+ *           description: 최근 실전 풀이 기록(최대 100개)
+ *           items:
+ *             $ref: '#/components/schemas/PracticeRecord'
  *
- *     TypeStat:
+ *     PracticeTypeStat:
  *       type: object
  *       properties:
  *         type:
  *           type: string
- *           example: "SQL Injection"
+ *           example: "sql-injection-basic"
  *         total:
  *           type: integer
- *           example: 15
+ *           example: 3
  *         successCount:
  *           type: integer
- *           example: 12
+ *           example: 2
  *         progress:
  *           type: number
- *           example: 80.0
+ *           example: 66.67
  *
  *     PracticeRecord:
  *       type: object
  *       properties:
  *         problem:
  *           type: object
+ *           description: 문제 원본 정보
  *           properties:
- *             title:
+ *             slug:
  *               type: string
- *               example: "SQL Injection 실습 문제 1"
- *             type:
- *               type: string
- *               example: "SQL Injection"
- *             difficulty:
- *               type: string
- *               example: "중"
- *         result:
- *           type: string
- *           enum: [success, fail]
- *           example: "success"
- *         score:
+ *               example: "sql-injection-basic"
+ *             score:
+ *               type: integer
+ *               example: 100
+ *             answerRate:
+ *               type: number
+ *               example: 0.52
+ *             isActive:
+ *               type: boolean
+ *               example: true
+ *         penalty:
  *           type: integer
- *           example: 85
- *         usedHint:
+ *           example: 10
+ *         userHints:
  *           type: integer
  *           example: 1
+ *         score:
+ *           type: integer
+ *           example: 90
+ *         result:
+ *           type: string
+ *           enum: [unsolved, success, fail]
+ *           example: "success"
  *         solvedAt:
  *           type: string
  *           format: date-time
- *           example: "2025-09-30T18:42:00.000Z"
+ *
+ *     QuizProgress:
+ *       type: object
+ *       properties:
+ *         summary:
+ *           $ref: '#/components/schemas/QuizSummary'
+ *         parts:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/QuizPartProgress'
+ *
+ *     QuizSummary:
+ *       type: object
+ *       properties:
+ *         totalQuizzes:
+ *           type: integer
+ *           example: 60
+ *         solvedQuizzes:
+ *           type: integer
+ *           example: 42
+ *         progress:
+ *           type: integer
+ *           example: 70
+ *
+ *     QuizPartProgress:
+ *       type: object
+ *       properties:
+ *         techniqueId:
+ *           type: string
+ *           example: "675084b4a9f0e9d35b5c1e01"
+ *         slug:
+ *           type: string
+ *           example: "sql-injection"
+ *         title:
+ *           type: string
+ *           example: "SQL Injection"
+ *         solvedCount:
+ *           type: integer
+ *           example: 8
+ *         totalCount:
+ *           type: integer
+ *           example: 10
+ *         progress:
+ *           type: integer
+ *           example: 80
+ *         status:
+ *           type: string
+ *           enum: [not_started, in_progress, solved]
+ *           example: "in_progress"
  *
  *   securitySchemes:
  *     bearerAuth:
@@ -169,6 +225,7 @@ router.get("/link/github/callback",
  *       scheme: bearer
  *       bearerFormat: JWT
  */
+
 
 
 export default router;

@@ -1,3 +1,4 @@
+//실전 문제 풀이 관련 개인별 정보 모델
 import mongoose from "mongoose";
 
 const problemPersonalSchema = new mongoose.Schema({

@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Technique from "../models/theory.model.js";
 import Quiz from "../models/quiz.model.js";
 import WrongNote from "../models/wrongNode.model.js";
+import QuizProcess from "../models/quizProcess.model.js";
 import dotenv from "dotenv";
 dotenv.config();
 import { analyzeAnswersBatch } from "../utils/ai.client.js";
@@ -46,6 +47,27 @@ export async function checkAnswerAndAward({ userId, quizId, userAnswer }){
 
         const correct = quiz.correctAnswer === userAnswer;
 
+        //진행상황에 기록
+        try {
+                await QuizProcess.findOneAndUpdate(
+                        { userId, quizId : quiz._id },
+                        {
+                                $set: {
+                                        techniqueId: quiz.techniqueId,
+                                        lastAnswer: userAnswer,
+                                        lastCorrect: correct,
+                                        lastAnsweredAt: new Date(),
+                                        status: correct ? 'solved' : 'in_progress',
+                                },
+                                $inc: { attempts: 1 },
+                        },
+                        { upsert: true, new: true }
+                );
+        } catch (error) {
+                console.error("Error updating QuizProcess:", error);
+       }
+
+        //오답노트에 기록
         if(!correct){
                 await WrongNote.create({
                         userId,
@@ -61,6 +83,7 @@ export async function checkAnswerAndAward({ userId, quizId, userAnswer }){
                 });
         }
         
+        //정답 시 포인트 지급
         let totalPoints = undefined;
         let earned = 0;
         if(correct && UserModel){
