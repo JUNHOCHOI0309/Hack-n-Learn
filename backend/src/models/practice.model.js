@@ -1,4 +1,4 @@
-//실습 영역 결과 모델
+//실습 영역 모델
 import mongoose from 'mongoose';
 
 const practiceSchema = new mongoose.Schema({
