@@ -1,4 +1,22 @@
 import heroImage from '../assets/images/이론학습 상세.png';
+import fileUpload1 from '../assets/images/fileUpload/fileUpload1.png';
+import fileUpload2 from '../assets/images/fileUpload/fileUpload2.png';
+import fileUpload3 from '../assets/images/fileUpload/fileUpload3.png';
+import fileUpload4 from '../assets/images/fileUpload/fileUpload4.png';
+import fileUpload5 from '../assets/images/fileUpload/fileUpload5.png';
+import fileUpload6 from '../assets/images/fileUpload/fileUpload6.png';
+import fileUpload7 from '../assets/images/fileUpload/fileUpload7.png';
+import fileUpload8 from '../assets/images/fileUpload/fileUpload8.png';
+import fileUpload9 from '../assets/images/fileUpload/fileUpload9.png';
+import fileUpload10 from '../assets/images/fileUpload/fileUpload10.png';
+import fileUpload11 from '../assets/images/fileUpload/fileUpload11.png';
+import fileUpload12 from '../assets/images/fileUpload/fileUpload12.png';
+import fileUpload13 from '../assets/images/fileUpload/fileUpload13.png';
+import fileUpload14 from '../assets/images/fileUpload/fileUpload14.png';
+import fileUpload15 from '../assets/images/fileUpload/fileUpload15.png';
+import fileUpload16 from '../assets/images/fileUpload/fileUpload16.png';
+import fileUpload17 from '../assets/images/fileUpload/fileUpload17.png';
+import fileUpload18 from '../assets/images/fileUpload/fileUpload18.png';
 import type { LearningTopic } from '../types/learning';
 
 export const fileUpload: LearningTopic = {
@@ -130,41 +148,36 @@ export const fileUpload: LearningTopic = {
       ],
     },
     {
-      type: 'ul',
+      type: 'nested-list',
       items: [
-        ['**파일명**'],
-        [
-          '브라우저에서 보낸 이름 그대로 서버에 저장하면 경로 조작, 확장자 우회 가능',
-        ],
-        [
-          { type: 'code', text: 'profile.php' },
-          ', ',
-          { type: 'code', text: '../../etc/passwd' },
-          ', ',
-          { type: 'code', text: 'shell.php.jpg' },
-          ' 등',
-        ],
-        ['**MIME 타입 (Content-Type)**'],
-        ['클라이언트가 임의 조작 가능. 헤더 신뢰 금지'],
-        [
-          { type: 'code', text: 'image/png' },
-          ', ',
-          { type: 'code', text: 'application/pdf' },
-        ],
-        ['**파일 확장자**'],
-        ['일부 서버는 마지막 확장자만 검사'],
-        [
-          { type: 'code', text: 'boom.php.jpg' },
-          ', ',
-          { type: 'code', text: 'shell.php.jpg' },
-        ],
-        ['**파일 내용 (매직 바이트)**'],
-        ['실제 포맷을 구별할 수 있는 시그니처로, 서버가 직접 확인해야함'],
-        [
-          { type: 'code', text: '\\xFF\\xD8\\xFF (JPEG)' },
-          ', ',
-          { type: 'code', text: '\\x89PNG (PNG)' },
-        ],
+        {
+          content: ['**파일명**'],
+          subItems: [
+            ['브라우저에서 보낸 이름 그대로 서버에 저장하면 경로 조작, 확장자 우회 가능'],
+            [{ type: 'code', text: 'profile.php' }, ', ', { type: 'code', text: '../../etc/passwd' }, ', ', { type: 'code', text: 'shell.php.jpg' }, ' 등'],
+          ],
+        },
+        {
+          content: ['**MIME 타입 (Content-Type)**'],
+          subItems: [
+            ['클라이언트가 임의 조작 가능. 헤더 신뢰 금지'],
+            [{ type: 'code', text: 'image/png' }, ', ', { type: 'code', text: 'application/pdf' }],
+          ],
+        },
+        {
+          content: ['**파일 확장자**'],
+          subItems: [
+            ['일부 서버는 마지막 확장자만 검사'],
+            [{ type: 'code', text: 'boom.php.jpg' }, ', ', { type: 'code', text: 'shell.php.jpg' }],
+          ],
+        },
+        {
+          content: ['**파일 내용 (매직 바이트)**'],
+          subItems: [
+            ['실제 포맷을 구별할 수 있는 시그니처로, 서버가 직접 확인해야함'],
+            [{ type: 'code', text: '\\xFF\\xD8\\xFF (JPEG)' }, ', ', { type: 'code', text: '\\x89PNG (PNG)' }],
+          ],
+        },
       ],
     },
     {
@@ -185,34 +198,22 @@ export const fileUpload: LearningTopic = {
       content: ['서버가 파일을 어디에 저장하느냐는 매우 중요한 요소입니다.'],
     },
     {
-      type: 'ul',
+      type: 'nested-list',
       items: [
-        [
-          '**웹루트 내부 저장**',
-          ' (',
-          { type: 'code', text: '/var/www/html/uploads/' },
-          ')',
-        ],
-        [
-          '웹서버가 ',
-          { type: 'code', text: '/uploads/' },
-          ' 폴더를 그대로 노출하면 사용자가 직접 URL로 접근이 가능합니다.',
-        ],
-        [
-          '공격자가 스크립트를 올리면 ',
-          { type: 'code', text: 'uploads/shell.php' },
-          '에 직접 접근해 실행시킬 수 있습니다.',
-        ],
-        [
-          '**웹루트 외부 저장**',
-          ' (',
-          { type: 'code', text: '/data/uploads/' },
-          ')',
-        ],
-        [
-          '사용자는 업로드한 파일의 실제 경로를 알 수 없고, 서버가 필요할 때만 다운로드용으로 전달됩니다.',
-        ],
-        ['코드 실행 위험이 근본적으로 차단됩니다.'],
+        {
+          content: ['**웹루트 내부 저장**', ' (', { type: 'code', text: '/var/www/html/uploads/' }, ')'],
+          subItems: [
+            ['웹서버가 ', { type: 'code', text: '/uploads/' }, ' 폴더를 그대로 노출하면 사용자가 직접 URL로 접근이 가능합니다.'],
+            ['공격자가 스크립트를 올리면 ', { type: 'code', text: 'uploads/shell.php' }, '에 직접 접근해 실행시킬 수 있습니다.'],
+          ],
+        },
+        {
+          content: ['**웹루트 외부 저장**', ' (', { type: 'code', text: '/data/uploads/' }, ')'],
+          subItems: [
+            ['사용자는 업로드한 파일의 실제 경로를 알 수 없고, 서버가 필요할 때만 다운로드용으로 전달됩니다.'],
+            ['코드 실행 위험이 근본적으로 차단됩니다.'],
+          ],
+        },
       ],
     },
     {
@@ -231,23 +232,43 @@ export const fileUpload: LearningTopic = {
       ],
     },
     {
-      type: 'ul',
+      type: 'nested-list',
       items: [
-        ['경로삽입'],
-        ['파일이 상위 디렉토리로 저장됨'],
-        [{ type: 'code', text: '../../../../etc/passwd' }],
-        ['덮어쓰기'],
-        ['기존 시스템 파일을 덮어씀'],
-        [{ type: 'code', text: 'config.php' }],
-        ['이중확장'],
-        ['확장자 검사 우회'],
-        [{ type: 'code', text: 'evil.php.jpg' }],
-        ['유니코드 혼동'],
-        ['필터 우회'],
-        [{ type: 'code', text: 'shell.pHp' }],
-        ['대소문자 변형'],
-        ['대소문자 구분 무시 시스템에서 우회 가능'],
-        [{ type: 'code', text: 'SHELL.PHP' }],
+        {
+          content: ['경로삽입'],
+          subItems: [
+            ['파일이 상위 디렉토리로 저장됨'],
+            [{ type: 'code', text: '../../../../etc/passwd' }],
+          ],
+        },
+        {
+          content: ['덮어쓰기'],
+          subItems: [
+            ['기존 시스템 파일을 덮어씀'],
+            [{ type: 'code', text: 'config.php' }],
+          ],
+        },
+        {
+          content: ['이중확장'],
+          subItems: [
+            ['확장자 검사 우회'],
+            [{ type: 'code', text: 'evil.php.jpg' }],
+          ],
+        },
+        {
+          content: ['유니코드 혼동'],
+          subItems: [
+            ['필터 우회'],
+            [{ type: 'code', text: 'shell.pHp' }],
+          ],
+        },
+        {
+          content: ['대소문자 변형'],
+          subItems: [
+            ['대소문자 구분 무시 시스템에서 우회 가능'],
+            [{ type: 'code', text: 'SHELL.PHP' }],
+          ],
+        },
       ],
     },
     { type: 'h3', text: '3.6 권한 설정과 실행 제한' },
@@ -258,26 +279,29 @@ export const fileUpload: LearningTopic = {
       ],
     },
     {
-      type: 'ul',
+      type: 'nested-list',
       items: [
-        ['디렉터리 권한'],
-        ['업로드 폴더는 오직 웹 앱 프로세스만 접근 가능해야함'],
-        [
-          { type: 'code', text: 'chmod 700' },
-          ' 또는 ',
-          { type: 'code', text: 'chmod 750' },
-        ],
-        ['파일 권한'],
-        ['실행권한을 제거하여 읽기/쓰기만 가능해야함'],
-        [{ type: 'code', text: 'chmod 600' }],
-        ['웹서버 설정'],
-        ['업로드 폴더에서 스크립트 실행 방지'],
-        [
-          { type: 'code', text: 'Options -ExecCGI' },
-          ', ',
-          { type: 'code', text: 'RemoveHandler.php' },
-          ' 등',
-        ],
+        {
+          content: ['디렉터리 권한'],
+          subItems: [
+            ['업로드 폴더는 오직 웹 앱 프로세스만 접근 가능해야함'],
+            [{ type: 'code', text: 'chmod 700' }, ' 또는 ', { type: 'code', text: 'chmod 750' }],
+          ],
+        },
+        {
+          content: ['파일 권한'],
+          subItems: [
+            ['실행권한을 제거하여 읽기/쓰기만 가능해야함'],
+            [{ type: 'code', text: 'chmod 600' }],
+          ],
+        },
+        {
+          content: ['웹서버 설정'],
+          subItems: [
+            ['업로드 폴더에서 스크립트 실행 방지'],
+            [{ type: 'code', text: 'Options -ExecCGI' }, ', ', { type: 'code', text: 'RemoveHandler.php' }, ' 등'],
+          ],
+        },
       ],
     },
     { type: 'h3', text: '3.7 크기 제한 / 속도 제한' },
@@ -288,14 +312,26 @@ export const fileUpload: LearningTopic = {
       ],
     },
     {
-      type: 'ul',
+      type: 'nested-list',
       items: [
-        ['대용량 파일 업로드(DoS)'],
-        ['1GB 파일을 무한 업로드시 디스크가 가득 참'],
-        ['Chunked Transfer Abuse'],
-        ['HTTP Body를 천천히 보내는 Slow POST 공격'],
-        ['압축 폭탄(Zip Bomb)'],
-        ['작은 파일이 압축 해제 후 수 GB가 되어 서버 메모리가 초과됨'],
+        {
+          content: ['대용량 파일 업로드(DoS)'],
+          subItems: [
+            ['1GB 파일을 무한 업로드시 디스크가 가득 참'],
+          ],
+        },
+        {
+          content: ['Chunked Transfer Abuse'],
+          subItems: [
+            ['HTTP Body를 천천히 보내는 Slow POST 공격'],
+          ],
+        },
+        {
+          content: ['압축 폭탄(Zip Bomb)'],
+          subItems: [
+            ['작은 파일이 압축 해제 후 수 GB가 되어 서버 메모리가 초과됨'],
+          ],
+        },
       ],
     },
     { type: 'h3', text: '3.8 다층 방어' },
@@ -583,8 +619,9 @@ if __name__ == "__main__":
 `,
             },
             {
-              type: 'p',
-              content: ['[실습 이미지: 스크린샷 2025-11-12 오후 10.27.32.png]'],
+              type: 'image',
+              src: fileUpload1,
+              alt: '스크린샷 2025-11-12 오후 10.27.32',
             },
             {
               type: 'p',
@@ -628,8 +665,9 @@ echo "UPLOAD TEST : Hello from uploaded PHP file";
               text: 'php -S 127.0.0.1:5000 -t static/upload',
             },
             {
-              type: 'p',
-              content: ['[실습 이미지: 스크린샷 2025-11-12 오후 10.28.21.png]'],
+              type: 'image',
+              src: fileUpload2,
+              alt: '스크린샷 2025-11-12 오후 10.28.21',
             },
             {
               type: 'ul',
@@ -642,8 +680,9 @@ echo "UPLOAD TEST : Hello from uploaded PHP file";
               ],
             },
             {
-              type: 'p',
-              content: ['[실습 이미지: 스크린샷 2025-11-12 오후 11.01.58.png]'],
+              type: 'image',
+              src: fileUpload3,
+              alt: '스크린샷 2025-11-12 오후 11.01.58',
             },
             {
               type: 'ul',
@@ -652,8 +691,9 @@ echo "UPLOAD TEST : Hello from uploaded PHP file";
               ],
             },
             {
-              type: 'p',
-              content: ['[실습 이미지: 스크린샷 2025-11-12 오후 11.05.47.png]'],
+              type: 'image',
+              src: fileUpload4,
+              alt: '스크린샷 2025-11-12 오후 11.05.47',
             },
             {
               type: 'ul',
@@ -714,8 +754,9 @@ echo "MIME TEST : This is a harmless PHP file.";
 ?>`,
             },
             {
-              type: 'p',
-              content: ['[실습 이미지: 스크린샷 2025-11-13 오전 12.06.00.png]'],
+              type: 'image',
+              src: fileUpload6,
+              alt: '스크린샷 2025-11-13 오전 12.06.00',
             },
             {
               type: 'ul',
@@ -728,8 +769,9 @@ echo "MIME TEST : This is a harmless PHP file.";
               ],
             },
             {
-              type: 'p',
-              content: ['[실습 이미지: 스크린샷 2025-11-13 오전 12.05.05.png]'],
+              type: 'image',
+              src: fileUpload5,
+              alt: '스크린샷 2025-11-13 오전 12.05.05',
             },
             {
               type: 'ul',
@@ -778,8 +820,9 @@ Connection: close`,
               ],
             },
             {
-              type: 'p',
-              content: ['[실습 이미지: 스크린샷 2025-11-13 오전 12.37.20.png]'],
+              type: 'image',
+              src: fileUpload7,
+              alt: '스크린샷 2025-11-13 오전 12.37.20',
             },
             {
               type: 'ul',
@@ -843,8 +886,9 @@ echo "Double-extension TEST : hello BUDDY"
               text: 'cp upload3.php upload3.php.jpg',
             },
             {
-              type: 'p',
-              content: ['[실습 이미지: 스크린샷 2025-11-13 오전 12.43.53.png]'],
+              type: 'image',
+              src: fileUpload9,
+              alt: '스크린샷 2025-11-13 오전 12.43.53',
             },
             {
               type: 'ul',
@@ -857,8 +901,9 @@ echo "Double-extension TEST : hello BUDDY"
               ],
             },
             {
-              type: 'p',
-              content: ['[실습 이미지: 스크린샷 2025-11-13 오전 12.43.17.png]'],
+              type: 'image',
+              src: fileUpload8,
+              alt: '스크린샷 2025-11-13 오전 12.43.17',
             },
             {
               type: 'ul',
@@ -869,8 +914,9 @@ echo "Double-extension TEST : hello BUDDY"
               ],
             },
             {
-              type: 'p',
-              content: ['[실습 이미지: 스크린샷 2025-11-13 오전 12.45.04.png]'],
+              type: 'image',
+              src: fileUpload10,
+              alt: '스크린샷 2025-11-13 오전 12.45.04',
             },
             {
               type: 'ul',
@@ -881,8 +927,9 @@ echo "Double-extension TEST : hello BUDDY"
               ],
             },
             {
-              type: 'p',
-              content: ['[실습 이미지: 스크린샷 2025-11-13 오전 1.00.24.png]'],
+              type: 'image',
+              src: fileUpload11,
+              alt: '스크린샷 2025-11-13 오전 1.00.24',
             },
             {
               type: 'ul',
@@ -906,8 +953,9 @@ echo "Double-extension TEST : hello BUDDY"
               ],
             },
             {
-              type: 'p',
-              content: ['[실습 이미지: 스크린샷 2025-11-13 오전 1.01.51.png]'],
+              type: 'image',
+              src: fileUpload12,
+              alt: '스크린샷 2025-11-13 오전 1.01.51',
             },
             {
               type: 'p',
@@ -972,8 +1020,9 @@ echo "You Just Activated My Trap Card"
 ?>`,
             },
             {
-              type: 'p',
-              content: ['[실습 이미지: 스크린샷 2025-11-14 오후 8.54.29.png]'],
+              type: 'image',
+              src: fileUpload13,
+              alt: '스크린샷 2025-11-14 오후 8.54.29',
             },
             {
               type: 'ul',
@@ -1024,8 +1073,9 @@ echo "You Just Activated My Trap Card"
               content: ['php서버에서도 php코드가 정상적으로 실행이 됩니다.'],
             },
             {
-              type: 'p',
-              content: ['[실습 이미지: 스크린샷 2025-11-14 오후 9.03.21.png]'],
+              type: 'image',
+              src: fileUpload14,
+              alt: '스크린샷 2025-11-14 오후 9.03.21',
             },
             {
               type: 'ul',
@@ -1198,20 +1248,23 @@ print("✅ zip_slip_attack.zip created")`,
               text: 'python make_zip_slip.py',
             },
             {
-              type: 'p',
-              content: ['[실습 이미지: 스크린샷 2025-11-14 오후 9.21.28.png]'],
+              type: 'image',
+              src: fileUpload16,
+              alt: '스크린샷 2025-11-14 오후 9.21.28',
             },
             {
-              type: 'p',
-              content: ['[실습 이미지: 스크린샷 2025-11-14 오후 9.20.01.png]'],
+              type: 'image',
+              src: fileUpload15,
+              alt: '스크린샷 2025-11-14 오후 9.20.01',
             },
             {
               type: 'ul',
               items: [['1. 일반 php파일을 업로드하게 되면']],
             },
             {
-              type: 'p',
-              content: ['[실습 이미지: 스크린샷 2025-11-14 오후 9.23.26.png]'],
+              type: 'image',
+              src: fileUpload17,
+              alt: '스크린샷 2025-11-14 오후 9.23.26',
             },
             {
               type: 'ul',
@@ -1220,8 +1273,9 @@ print("✅ zip_slip_attack.zip created")`,
               ],
             },
             {
-              type: 'p',
-              content: ['[실습 이미지: 스크린샷 2025-11-14 오후 9.24.45.png]'],
+              type: 'image',
+              src: fileUpload18,
+              alt: '스크린샷 2025-11-14 오후 9.24.45',
             },
             {
               type: 'ul',

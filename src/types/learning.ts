@@ -1,4 +1,4 @@
-export type InlineContent = string | { type: 'code' | 'strong'; text: string };
+export type InlineContent = string | { type: 'code'; text: string };
 
 export type ImageBlock = { type: 'image'; src: string; alt?: string };
 
