@@ -8,7 +8,7 @@ import { uploadToR2, deleteFromR2 } from '../utils/uploadToR2.js';
 import mongoose from 'mongoose';
 
 export const getMyPageData = async (userId) => {
-        const uid = mongoose.Types.ObjectId(userId);
+        const uid = new mongoose.Types.ObjectId(userId);
 
         const profile = await User.findById(uid)
         .select("nickname tier points createdAt lastLogin isProfileComplete profileImageUrl profileImageKey")
