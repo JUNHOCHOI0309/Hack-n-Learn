@@ -25,11 +25,6 @@ const router = Router();
  * /api/problems/progress:
  *   get:
  *     summary: 실습 문제 진행 상태 목록 조회
- *     description: |
- *       사용자가 푼 실습 문제의 상태를 반환합니다.  
- *       각 문제에 대해 제목, 난이도, 정답률(answerRate), 사용자의 풀이 상태(result)를 포함하여 제공합니다.  
- *       - result: "unsolved" | "success" | "fail"
- *       - answerRate: 전체 활성 사용자 대비 정답자 비율 (0 ~ 1)
  *     tags: [Problems]
  *     security:
  *       - bearerAuth: []
