@@ -20,7 +20,41 @@ const router = Router();
  *   name: Problems
  *   description: 실습 문제(Practice Lab) 관련 API
  */
-
+/**
+ * @swagger
+ * /api/problems/progress:
+ *   get:
+ *     summary: 실습 문제 진행 상태 목록 조회
+ *     tags: [Problems]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 실습 문제 진행 현황 반환
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       slug: { type: string }
+ *                       title: { type: string }
+ *                       difficulty:
+ *                         type: string
+ *                         enum: [easy, medium, hard]
+ *                       result:
+ *                         type: string
+ *                         enum: [unsolved, success, fail]
+ *                       answerRate:
+ *                         type: number
+ *                         example: 0.52
+ */
 /**
  * @swagger
  * /api/problems/{slug}/submit:
@@ -390,6 +424,7 @@ router.get("/:slug/events", requireLogin, async (req, res) => {
         }
 });
 
+router.get("/progress" , requireLogin, problemController.getProgressList); 
 router.post("/:slug/submit", validateBody('submitFlag'), problemController.submitFlag);
 router.post("/:slug/request-hint", validateBody('requestHint'), problemController.requestHint);
 

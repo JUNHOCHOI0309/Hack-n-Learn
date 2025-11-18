@@ -18,13 +18,13 @@ const problemSchema = new mongoose.Schema({
                 content : { type: String, required: true },
                 penalty : { type: Number, default: 0, min: 0 },
         }],
-        // title : { type: String, required: true, trim : true },
+        title : { type: String, required: true, trim : true },
         // description : { type: String, required: true }, // 문제 설명 (HTML 형식)
-        // difficulty : {
-        //                 type: String,
-        //                 enum : ["easy", "medium", "hard"],
-        //                 required: true,
-        // },        
+        difficulty : {
+                        type: String,
+                        enum : ["easy", "medium", "hard"],
+                        required: true,
+        },        
         // aiExplain : { type: String, default: "" },
 }, { timestamps: true });
 

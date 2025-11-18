@@ -111,6 +111,30 @@ export const requestHint = async ({ userId, problemId, stage }) => {
         }
 };
 
+export const getProblemProgressList = async (userId) => {
+        const problems = await Problem.find({ isActive: true })
+                .select("slug title difficulty score answerRate")
+                .lean();
+
+        const personalList = await ProblemPersonal.find({ user: userId })
+                .select("problem result")
+                .lean();
+
+        const personalMap = new Map();
+        personalList.forEach(p => {
+                personalMap.set(p.problem.toString(), p.result);
+        });
+
+        return problems.map(p => ({
+                slug: p.slug,
+                title: p.title,
+                difficulty: p.difficulty,
+                answerRate: p.answerRate ?? 0,
+                result : personalMap.get(p._id.toString()) || "unsolved",
+        }));
+};
+
+
 //문제 목록 - 필터, 정렬, 풀이 여부
 // export const findProblemsWithFilters = async (userId, query) => {
 //         const match = {};

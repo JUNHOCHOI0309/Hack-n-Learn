@@ -25,6 +25,16 @@ export const requestHint = async (req, res, next) => {
                 next(error);
         }
 };
+
+export const getProgressList = async (req, res, next) => {
+        try {
+                const userId = req.user.id;
+                const data = await problemsService.getUserProblemProgressList(userId);
+                res.json({ success: true, data });
+        } catch (error) {
+                next(error);
+        }
+};
 // export const listProblems = async (req, res, next) => {
 //         try {
 //                 const userId = req.user.id;
