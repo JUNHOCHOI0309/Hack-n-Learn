@@ -70,8 +70,8 @@ export class ChatBotService {
                 return { threadId: sessionId, answer: text  || "", isNewSession };
         }
 
-        static async getHistoryByUser({ userId, limit = 50 }){
-                const docs = await ChatBotMessage.find({ userId })
+        static async getHistoryByUser({ userId, threadId, limit = 50 }){
+                const docs = await ChatBotMessage.find({ userId, threadId })
                         .sort({ createdAt: -1 })
                         .limit(limit)
                         .lean();

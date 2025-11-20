@@ -48,11 +48,13 @@ export class ChatBotController {
                 try {
                         const userId = req.session?.userId || null;
                         const guestThreadId = req.cookies?.guestThreadId;
+                        const { threadId } = req.query || {};
                         const limit = Number(req.query.limit) || 50;
 
                         if(userId){
                                 const data = await ChatBotService.getHistoryByUser({
                                         userId,
+                                        threadId,
                                         limit,
                                 });
 
