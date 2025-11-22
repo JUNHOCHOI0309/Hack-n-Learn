@@ -39,7 +39,7 @@ export default function LoginPage() {
     try {
       const success = await login(data.username, data.password);
       if (success) {
-        navigate('/'); // Redirect to home page or dashboard
+        navigate('/learning'); // Redirect to home page or dashboard
       } else {
         const errorMsg =
           '로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.';
