@@ -2,7 +2,11 @@ import * as problemsService from "../services/problems.service.js";
 
 export const submitFlag = async (req, res, next) => {
         try {
-                const userId = req.user.id;
+                const userId = req.session.userId;
+
+                if(!userId) {
+                        return res.status(401).json({ success: false, message: "로그인이 필요합니다." });
+                }
                 const problemId = req.params.slug;
                 const { flag } = req.body; // 사용자가 제출한 플래그
 
@@ -15,7 +19,11 @@ export const submitFlag = async (req, res, next) => {
 
 export const requestHint = async (req, res, next) => {
         try {
-                const userId = req.user.id;
+                const userId = req.session.userId;
+
+                if(!userId) {
+                        return res.status(401).json({ success: false, message: "로그인이 필요합니다." });
+                }
                 const problemId = req.params.slug;
                 const { stage } = req.body; // 요청하는 힌트 단계
 
@@ -28,7 +36,11 @@ export const requestHint = async (req, res, next) => {
 
 export const getProgressList = async (req, res, next) => {
         try {
-                const userId = req.user.id;
+                const userId = req.session.userId;
+
+                if(!userId) {
+                        return res.status(401).json({ success: false, message: "로그인이 필요합니다." });
+                }
                 const data = await problemsService.getUserProblemProgressList(userId);
                 res.json({ success: true, data });
         } catch (error) {
