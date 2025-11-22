@@ -15,7 +15,8 @@ export const createPost = async (req, res) => {
                 const post = await communityService.createPost(data);
                 res.status(201).json(post);
         } catch (error) {
-                res.status(500).json({ message: "생성 실패" });
+                console.error("POST CREATE ERROR:", error);
+                res.status(500).json({ message: "생성 실패", error: error.message });
         }
 };
 
@@ -28,6 +29,7 @@ export const deletePost = async (req, res) => {
 
                 res.json({ success: true, message: "삭제 성공" });
         } catch (error) {
+                console.error("POST DELETE ERROR:", error);
                 res.status(500).json({ message: "삭제 실패" });
         }
 };
@@ -44,6 +46,7 @@ export const updatePost = async (req, res) => {
                 if(post === "unauthorized") return res.status(403).json({ success: false, message: "권한이 없습니다." });
                 res.json({ success: true, data: post });
         } catch (error) {
+                console.error("POST UPDATE ERROR:", error);
                 res.status(500).json({ message: "수정 실패" });
         }
 };
@@ -54,6 +57,7 @@ export const getPosts = async (req, res) => {
                 const result = await communityService.getPosts( page, limit, type, keyword );
                 res.json({success: true, data: result});
         } catch (error) {
+                console.error("POSTS GET ERROR:", error);
                 res.status(500).json({ message: "조회 실패" });
         }
 };
@@ -65,6 +69,7 @@ export const getPostById = async (req, res) => {
                 if(!post) return res.status(404).json({ success: false, message: "게시글을 찾을 수 없습니다." });
                 res.json({ success: true, data: post });
         } catch (error) {
+                console.error("POST GET BY ID ERROR:", error);
                 res.status(500).json({ message: "조회 실패" }); 
         }
 };
@@ -93,6 +98,7 @@ export const createComment = async (req, res) => {
                 }
                 res.status(201).json({ success: true, data: comment });
         } catch (error) {
+                console.error("COMMENT CREATE ERROR:", error);
                 res.status(500).json({ message: "생성 실패" });
         }
 };
@@ -107,6 +113,7 @@ export const updateComment = async (req, res) => {
 
                 res.json({ success: true, data: comment });
         } catch (error) {
+                console.error("COMMENT UPDATE ERROR:", error);
                 res.status(500).json({ message: "수정 실패" });
         }
 };
@@ -120,6 +127,7 @@ export const deleteComment = async (req, res) => {
 
                 res.json({ success: true, message: "댓글 삭제 성공" });
         } catch (error) {
+                console.error("COMMENT DELETE ERROR:", error);
                 res.status(500).json({ message: "댓글 삭제 실패" });
         }       
 };
@@ -149,6 +157,7 @@ export const createReply = async (req, res) => {
 
                 res.status(201).json({ success: true, data: reply });
         } catch (error) {
+                console.error("REPLY CREATE ERROR:", error);
                 res.status(500).json({ message: "답글 생성 실패" });
         }
 };
@@ -158,6 +167,7 @@ export const getCommentsTree = async (req, res) => {
                 const result = await communityService.getCommentsTree(req.params.id);
                 res.json({ success: true, data: result });
         } catch (error) {
+                console.error("COMMENTS TREE GET ERROR:", error);
                 res.status(500).json({ message: "댓글 조회 실패" });
         }
 };
