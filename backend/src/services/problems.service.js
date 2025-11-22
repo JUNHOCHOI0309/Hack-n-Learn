@@ -3,23 +3,12 @@ import ProblemPersonal from "../models/problemPersonal.model.js";
 import User from "../models/user.model.js";
 import mongoose from "mongoose";
 
-export const findProblemByIdentifier = async (identifier, session = null) => {
-        if(typeof identifier === 'string') return null;
-        const id = identifier.trim();
-
-        if(mongoose.Types.ObjectId.isValid(id)) {
-                return session ? Problem.findById(id).session(session) : Problem.findById(id);
-        }
-        const slug = id.toLowerCase();
-        return session ? Problem.findOne({ slug }).session(session) : Problem.findOne({ slug });
-};
-
 export const submitFlag = async ({userId, problemId, flag}) => {
         const session = await mongoose.startSession();
         session.startTransaction();
 
         try {
-                const problem = await findProblemByIdentifier(problemId, session);
+                const problem = await Problem.findOne({slug : problemId}).session(session);
                 if (!problem) throw new Error("문제를 찾을 수 없습니다.");
 
                 const uid = mongoose.Types.ObjectId(userId);
@@ -89,7 +78,7 @@ export const requestHint = async ({ userId, problemId, stage }) => {
         session.startTransaction();
 
         try {
-                const problem = await findProblemByIdentifier(problemId, session)
+                const problem = await Problem.findOne({slug : problemId}).session(session);
                 if (!problem) throw new Error("문제를 찾을 수 없습니다.");
 
                 let personal = await ProblemPersonal.findOne({ user: uid, problem: problem._id }).session(session);
