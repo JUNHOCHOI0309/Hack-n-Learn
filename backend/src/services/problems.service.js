@@ -109,11 +109,14 @@ export const requestHint = async ({ userId, problemId, stage }) => {
                 personal.userHints += 1;
                 await personal.save({ session });
 
-                const hint = problem.hints?.find(h => h.stage === stage)?.content || `힌트 ${stage}단계: 핵심 개념을 복기해보세요.`;
+                const hints = problem.hints?.filter(h => h.stage === stage)?.map(h => ({ type : h.type, content: h.content })) || [{
+                        type: "text",
+                        content: `힌트 ${stage}단계: 핵심 개념을 복기해보세요.`
+                }];
                 await session.commitTransaction();
                 session.endSession();
                 return {
-                        hint,
+                        hints,
                         penaltyApplied: penaltyIncrement,
                         totalPenalty: personal.penalty,
                         usedHint : personal.userHints,
@@ -147,6 +150,15 @@ export const getProblemProgressList = async (userId) => {
                 answerRate: p.answerRate ?? 0,
                 result : personalMap.get(p._id.toString()) || "unsolved",
         }));
+};
+
+export const getProblemDetailsBySlug = async (slug) => {
+        const problem = await Problem.findOne({ slug, isActive: true })
+                .select("scenario goals")
+                .lean();
+
+        if( !problem ) return null;
+        return problem;
 };
 
 

@@ -136,7 +136,7 @@ const router = Router();
  * @swagger
  * /api/problems/{slug}/request-hint:
  *   post:
- *     summary: 실습 문제 힌트 요청
+ *     summary: 단계별 힌트 요청 (여러 개의 힌트가 반환될 수 있음)
  *     tags: [Problems]
  *     security:
  *       - bearerAuth: []
@@ -146,7 +146,7 @@ const router = Router();
  *         required: true
  *         schema:
  *           type: string
-
+ *         description: 문제 식별용 slug
  *     requestBody:
  *       required: true
  *       content:
@@ -160,7 +160,7 @@ const router = Router();
  *                 description: 요청하는 힌트 단계 (1, 2, 3 ...)
  *     responses:
  *       200:
- *         description: 요청한 힌트와 감점 정보 반환
+ *         description: 요청한 단계의 힌트 목록 반환 + 패널티 정보 포함
  *         content:
  *           application/json:
  *             schema:
@@ -172,25 +172,39 @@ const router = Router();
  *                 data:
  *                   type: object
  *                   properties:
- *                     hint:
- *                       type: string
- *                       example: "입력값이 그대로 쿼리에 들어가고 있지 않은지 확인해보세요."
+ *                     hints:
+ *                       type: array
+ *                       description: 동일 stage에 속한 여러 힌트 목록
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           type:
+ *                             type: string
+ *                             enum: [text, code]
+ *                             example: "code"
+ *                           content:
+ *                             type: string
+ *                             example: "(SELECT substr(flag,1,1) FROM flags WHERE id=1)='F'"
  *                     penaltyApplied:
- *                       type: number
+ *                       type: integer
  *                       example: 10
- *                       description: 이번 요청으로 인한 감점량
+ *                       description: 이번 요청에서 적용된 패널티
  *                     totalPenalty:
- *                       type: number
- *                       example: 20
- *                       description: 누적 감점
+ *                       type: integer
+ *                       example: 30
+ *                       description: 사용자 누적 패널티
  *                     usedHint:
- *                       type: number
+ *                       type: integer
  *                       example: 2
- *                       description: 사용한 힌트 수
+ *                       description: 지금까지 요청한 힌트 개수
  *                     remainingPotentialScore:
- *                       type: number
- *                       example: 80
- *                       description: 남은 최대 획득 가능 점수
+ *                       type: integer
+ *                       example: 70
+ *                       description: 패널티를 반영한 남은 최대 점수
+ *       404:
+ *         description: 문제를 찾을 수 없음
+ *       500:
+ *         description: 서버 내부 오류
  */
 /**
  * @swagger
@@ -249,7 +263,63 @@ const router = Router();
  *                 message:
  *                   type: string
  *                   example: "Failed to fetch event data."
+ * 
+ * @swagger
+ * /api/problems/{slug}:
+ *   get:
+ *     summary: 실습 문제 상세 조회
+ *     tags: [Problems]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 문제 식별용 slug
+ *     responses:
+ *       200:
+ *         description: 문제 상세 정보 반환
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     scenario:
+ *                       type: string
+ *                       example: >
+ *                         당신은 다크웹에서 활동하며... FLAG를 추출해야 한다.
+ *                     goals:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       example:
+ *                         - "Blind SQL Injection의 동작 방식 이해"
+ *                         - "Boolean-Based Blind SQLi로 데이터 추출"
+ *                         - "flags 테이블에서 FLAG 획득"
+ *       404:
+ *         description: 문제를 찾을 수 없음
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Problem not found"
  */
+
+
 
 
 
@@ -447,7 +517,8 @@ router.get("/:slug/events", requireLogin, async (req, res) => {
         }
 });
 
-router.get("/progress" , requireLogin, problemController.getProgressList); 
+router.get("/progress" , requireLogin, problemController.getProgressList); //문제 목록
+router.get("/:slug",requireLogin, problemController.getProblemDetails); //문제 상세 정보
 router.post("/:slug/submit", validateBody('submitFlag'), problemController.submitFlag);
 router.post("/:slug/request-hint", validateBody('requestHint'), problemController.requestHint);
 

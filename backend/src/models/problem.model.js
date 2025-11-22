@@ -1,6 +1,18 @@
 //실습 문제 모델
 import mongoose from "mongoose";
 
+const ProblemHintSchema = new mongoose.Schema({
+        stage : { type: Number, required: true },
+        type: {
+                type: String,
+                enum : ["text", "code"],
+                required: true,
+                default: "text",
+        },
+        content : { type: String, required: true },
+        penalty : { type: Number, default: 10, min: 10 },
+}, { _id : false });
+
 const problemSchema = new mongoose.Schema({
         slug: { 
                 type: String, 
@@ -13,19 +25,18 @@ const problemSchema = new mongoose.Schema({
         flag : { type: String, required: true, select : false }, // 문제 풀이 정답
         answerRate : { type: Number, default: 0, min: 0, max: 1 }, 
         isActive : { type: Boolean, default: true },
-        hints : [{
-                stage : { type: Number, required: true },
-                content : { type: String, required: true },
-                penalty : { type: Number, default: 0, min: 0 },
-        }],
+        hints : {
+                type: [ProblemHintSchema],
+                default: [],
+        },
         title : { type: String, required: true, trim : true },
-        // description : { type: String, required: true }, // 문제 설명 (HTML 형식)
         difficulty : {
                         type: String,
                         enum : ["easy", "medium", "hard"],
                         required: true,
         },        
-        // aiExplain : { type: String, default: "" },
+        scenario : { type: String, required: true },
+        goals : [{ type: String, required: true }],
 }, { timestamps: true });
 
 const Problem = mongoose.model("Problem", problemSchema);

@@ -35,6 +35,20 @@ export const getProgressList = async (req, res, next) => {
                 next(error);
         }
 };
+
+export const getProblemDetails = async (req, res, next) => {
+        try {
+                const { slug } = req.params;
+
+                const problem = await problemsService.getProblemDetailsBySlug(slug);
+
+                if (!problem) return res.status(404).json({ success: false, message: "Problem not found" });
+
+                res.json({ success: true, data: problem });
+        } catch (error) {
+                next(error);
+        }
+};
 // export const listProblems = async (req, res, next) => {
 //         try {
 //                 const userId = req.user.id;
