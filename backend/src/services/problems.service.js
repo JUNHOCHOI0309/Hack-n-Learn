@@ -3,9 +3,9 @@ import ProblemPersonal from "../models/problemPersonal.model.js";
 import User from "../models/user.model.js";
 import mongoose from "mongoose";
 
-export const submitFlag = async ({userId, problemId, flag}) => {
+export const submitFlag = async ({userId, slug, flag}) => {
         try {
-                const problem = await Problem.findOne({slug : problemId});
+                const problem = await Problem.findOne({slug, isActive: true});
                 if (!problem) throw new Error("문제를 찾을 수 없습니다.");
 
                 const uid = mongoose.Types.ObjectId(userId);
@@ -63,9 +63,9 @@ export const submitFlag = async ({userId, problemId, flag}) => {
                 throw error;
         }};
 
-export const requestHint = async ({ userId, problemId, stage }) => {
+export const requestHint = async ({ userId, slug, stage }) => {
         try {
-                const problem = await Problem.findOne({ slug: problemId, isActive: true });
+                const problem = await Problem.findOne({ slug, isActive: true });
                 if (!problem) throw new Error("문제를 찾을 수 없습니다.");
 
                 const uid = new mongoose.Types.ObjectId(userId);
