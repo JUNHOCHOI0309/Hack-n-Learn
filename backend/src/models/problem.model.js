@@ -37,6 +37,7 @@ const problemSchema = new mongoose.Schema({
         },        
         scenario : { type: String, required: true },
         goals : [{ type: String, required: true }],
+        imageUrl : { type: String, default: "" },
 }, { timestamps: true });
 
 const Problem = mongoose.model("Problem", problemSchema);
