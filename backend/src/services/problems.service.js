@@ -4,15 +4,12 @@ import User from "../models/user.model.js";
 import mongoose from "mongoose";
 
 export const submitFlag = async ({userId, problemId, flag}) => {
-        const session = await mongoose.startSession();
-        session.startTransaction();
-
         try {
-                const problem = await Problem.findOne({slug : problemId}).session(session);
+                const problem = await Problem.findOne({slug : problemId});
                 if (!problem) throw new Error("문제를 찾을 수 없습니다.");
 
                 const uid = mongoose.Types.ObjectId(userId);
-                let problemPersonal = await ProblemPersonal.findOne({ user: uid, problem: problem._id }).session(session);
+                let problemPersonal = await ProblemPersonal.findOne({ user: uid, problem: problem._id });
 
                 if (!problemPersonal) {
                         problemPersonal = new ProblemPersonal({
@@ -30,58 +27,50 @@ export const submitFlag = async ({userId, problemId, flag}) => {
                 if(!isCorrect) {//오답 패널티가 힌트 요청한 만큼 + 틀린 횟수 만큼
                         problemPersonal.penalty += 10;
                         problemPersonal.result = "fail";
-                        await problemPersonal.save({ session });
+                        await problemPersonal.save();
                 } else {
                         const finalScore = Math.max(problemPersonal.score - problemPersonal.penalty, 0);
 
                         problemPersonal.result = "success";
                         problemPersonal.score = finalScore;
                         problemPersonal.solvedAt = new Date();
-                        await problemPersonal.save({ session });
+                        await problemPersonal.save();
                         await User.findByIdAndUpdate(
                                 userId,
                                 { $inc : { points: finalScore}},
-                                { session }
                         );
 
-                        const totalUsers = await User.countDocuments({ isActive: true }).session(session);
+                        const totalUsers = await User.countDocuments({ isActive: true });
 
                         const successCount = await ProblemPersonal.countDocuments({ 
                                 problem: problem._id, 
                                 result: "success"
-                        }).session(session);
+                        });
 
                         const updateRate = totalUsers === 0 ? 0 : successCount / totalUsers;
 
                         await Problem.findByIdAndUpdate(
                                 problem._id,
-                                { answerRate: updateRate },
-                                { session }
+                                { answerRate: updateRate }
                         );
                 }
-                await session.commitTransaction();
-                session.endSession();
                 return {
                         correct: isCorrect,
                         gained : isCorrect ? Math.max(problemPersonal.score - problemPersonal.penalty, 0) : 0,
                         message: isCorrect ? "정답입니다!" : "오답입니다. 다시 시도해보세요.",  
                 };
         } catch (error) {
-                await session.abortTransaction();
-                session.endSession();
                 throw error;
         }};
 
 export const requestHint = async ({ userId, problemId, stage }) => {
-        const uid = new mongoose.Types.ObjectId(userId);
-        const session = await mongoose.startSession();
-        session.startTransaction();
-
         try {
-                const problem = await Problem.findOne({slug : problemId}).session(session);
+                const problem = await Problem.findOne({ slug: problemId, isActive: true });
                 if (!problem) throw new Error("문제를 찾을 수 없습니다.");
 
-                let personal = await ProblemPersonal.findOne({ user: uid, problem: problem._id }).session(session);
+                const uid = new mongoose.Types.ObjectId(userId);
+
+                let personal = await ProblemPersonal.findOne({ user: uid, problem: problem._id });
                 if( !personal ) {
                         personal = new ProblemPersonal({
                                 user: uid,
@@ -96,14 +85,12 @@ export const requestHint = async ({ userId, problemId, stage }) => {
                 const penaltyIncrement = 10;
                 personal.penalty += penaltyIncrement;
                 personal.userHints += 1;
-                await personal.save({ session });
+                await personal.save();
 
                 const hints = problem.hints?.filter(h => h.stage === stage)?.map(h => ({ type : h.type, content: h.content })) || [{
                         type: "text",
                         content: `힌트 ${stage}단계: 핵심 개념을 복기해보세요.`
                 }];
-                await session.commitTransaction();
-                session.endSession();
                 return {
                         hints,
                         penaltyApplied: penaltyIncrement,
@@ -112,8 +99,6 @@ export const requestHint = async ({ userId, problemId, stage }) => {
                         remainingPotentialScore : Math.max(personal.score - personal.penalty, 0),
                 };
         } catch (error) {
-                await session.abortTransaction();
-                session.endSession();
                 throw error;
         }
 };
