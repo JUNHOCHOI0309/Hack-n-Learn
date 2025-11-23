@@ -1,17 +1,26 @@
-import { quizzes } from '../data/quizzes';
+import axios from 'axios';
 import type { Problem } from '../types/quiz';
 
-export const quizService = {
-  getQuizBySlug: async (slug: string): Promise<Problem[] | undefined> => {
-    // In a real application, this would be an actual API call, e.g.:
-    // const response = await axios.get(`/api/theory/quiz/${slug}`);
-    // return response.data;
+interface QuizApiResponse {
+  success: boolean;
+  data: {
+    technique: {
+      _id: string;
+      slug: string;
+      title: string;
+      level: string;
+      description: string;
+      questionType: string;
+    };
+    quizzes: Problem[];
+  };
+}
 
-    // For now, we'll simulate an API call by returning data from our local 'quizzes' object
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(quizzes[slug]);
-      }, 300); // Simulate network delay
-    });
+export const quizService = {
+  getQuizBySlug: async (slug: string): Promise<Problem[]> => {
+    const response = await axios.get<QuizApiResponse>(
+      `/api/theory/quiz/${slug}`
+    );
+    return response.data.data.quizzes;
   },
 };

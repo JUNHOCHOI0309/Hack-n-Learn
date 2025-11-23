@@ -41,15 +41,15 @@ export default function LearningPageQuiz() {
   }, [topicId]);
 
   const [submittedProblems, setSubmittedProblems] = useState<{
-    [key: number]: boolean;
+    [key: string]: boolean; // Change to string to match _id
   }>({});
 
-  const handleProblemSubmit = (problemId: number, isSubmitted: boolean) => {
+  const handleProblemSubmit = (problemId: string, isSubmitted: boolean) => {
     setSubmittedProblems((prev) => ({ ...prev, [problemId]: isSubmitted }));
   };
 
   const allProblemsSubmitted = problemsData?.every(
-    (problem) => submittedProblems[problem.id]
+    (problem) => submittedProblems[problem._id] // Change to problem._id
   );
 
   const handleCheckResults = () => {
@@ -85,11 +85,12 @@ export default function LearningPageQuiz() {
       <HeroSection title="개념확인퀴즈" imageUrl={HeroImg} />
       <div className="min-h-screen py-12 px-10">
         <div className="max-w-[1440px] mx-auto">
-          {problemsData.map((problem) => (
+          {problemsData.map((problem, index) => (
             <ProblemCard
-              key={problem.id}
+              key={problem._id}
               problem={problem}
               onProblemSubmit={handleProblemSubmit}
+              problemNumber={index + 1} // Pass the sequential number here
             />
           ))}
           <div className="flex justify-center mt-8">
