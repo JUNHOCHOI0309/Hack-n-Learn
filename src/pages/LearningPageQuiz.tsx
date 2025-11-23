@@ -2,7 +2,7 @@
 
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import type { Problem } from '../types/quiz';
+import type { Problem, UserAnswer } from '../types/quiz'; // Import UserAnswer type
 
 import HeroSection from '../components/HeroSection';
 import Button from '../components/Button';
@@ -17,6 +17,11 @@ export default function LearningPageQuiz() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  // New states for tracking overall quiz progress and score
+  const [totalEarnedPoints, setTotalEarnedPoints] = useState<number>(0);
+  const [submittedProblemIds, setSubmittedProblemIds] = useState<Set<string>>(new Set());
+  const [allUserAnswers, setAllUserAnswers] = useState<UserAnswer[]>([]); // New state to store all user answers
+
   useEffect(() => {
     const fetchQuizProblems = async () => {
       if (!topicId) {
@@ -29,6 +34,10 @@ export default function LearningPageQuiz() {
       try {
         const data = await quizService.getQuizBySlug(topicId);
         setProblemsData(data);
+        // Reset states when new quiz is loaded
+        setTotalEarnedPoints(0);
+        setSubmittedProblemIds(new Set());
+        setAllUserAnswers([]); // Reset user answers
       } catch (err) {
         setError("Failed to load quiz problems.");
         console.error(err);
@@ -40,20 +49,27 @@ export default function LearningPageQuiz() {
     fetchQuizProblems();
   }, [topicId]);
 
-  const [submittedProblems, setSubmittedProblems] = useState<{
-    [key: string]: boolean; // Change to string to match _id
-  }>({});
-
-  const handleProblemSubmit = (problemId: string, isSubmitted: boolean) => {
-    setSubmittedProblems((prev) => ({ ...prev, [problemId]: isSubmitted }));
+  // Modified handleProblemSubmit to track earned points and user answers
+  const handleProblemSubmit = (problemId: string, earnedPoints: number, userAnswer: string) => {
+    setTotalEarnedPoints((prev) => prev + earnedPoints);
+    setSubmittedProblemIds((prev) => new Set(prev).add(problemId));
+    setAllUserAnswers((prev) => [...prev, { problemId, answer: userAnswer }]);
   };
 
   const allProblemsSubmitted = problemsData?.every(
-    (problem) => submittedProblems[problem._id] // Change to problem._id
+    (problem) => submittedProblemIds.has(problem._id)
   );
 
   const handleCheckResults = () => {
-    navigate('/learning/quiz-results');
+    // Navigate to results page, passing relevant data including all user answers
+    navigate('/learning/quiz-results', {
+      state: {
+        topicId: topicId, // Pass the topicId (slug) for explanation API call
+        totalProblems: problemsData?.length || 0,
+        totalEarnedPoints: totalEarnedPoints,
+        allUserAnswers: allUserAnswers, // Pass all collected user answers
+      },
+    });
   };
 
   if (loading) {
@@ -89,8 +105,8 @@ export default function LearningPageQuiz() {
             <ProblemCard
               key={problem._id}
               problem={problem}
-              onProblemSubmit={handleProblemSubmit}
-              problemNumber={index + 1} // Pass the sequential number here
+              onProblemSubmit={handleProblemSubmit} // This will be updated to pass userAnswer
+              problemNumber={index + 1}
             />
           ))}
           <div className="flex justify-center mt-8">
@@ -98,7 +114,7 @@ export default function LearningPageQuiz() {
               variant="primary"
               onClick={handleCheckResults}
               className=""
-              disabled={!allProblemsSubmitted}
+              disabled={!allProblemsSubmitted} // Disable if not all answered
             >
               결과확인
             </Button>

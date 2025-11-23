@@ -20,3 +20,53 @@ export interface Problem {
   explanation: string;
   questionType: 'short' | 'choice'; // 'input' from old type is 'short', 'multiple-choice' is 'choice'
 }
+
+export interface SingleProblemCheckData {
+  correct: boolean;
+  correctAnswer: string;
+  explanation: string;
+  earned: number;
+}
+
+export interface SingleProblemCheckResponse {
+  success: boolean;
+  data: SingleProblemCheckData;
+}
+
+// New types for AI Explanation
+export interface PerQuestionResult {
+  questionId: string;
+  reasonSummary: string;
+  mistakeAnalysis: string[];
+  stepByStepSolution: string[];
+  learningTips: string;
+}
+
+export interface AIExplanationData {
+  title: string;
+  summary: string;
+  focusAreas: string[];
+  nextSteps: string[];
+  model: string;
+  stats: {
+    totalCount: number;
+    correctCount: number;
+    wrongCount: number;
+  };
+  createdAt: string;
+  perQuestionResults: PerQuestionResult[];
+}
+
+export interface AIExplanationResponse {
+  success: boolean;
+  data: {
+    ok: boolean;
+    status: number;
+    data: AIExplanationData;
+  };
+}
+
+export interface UserAnswer {
+  problemId: string;
+  answer: string; // The user's selected choice label (string) or short answer text (string)
+}
