@@ -17,13 +17,13 @@ const QuizSchema = new mongoose.Schema({
         choices: {
                 type: [
                         {
-                                label: { type: String, enum: ["A", "B"], required: true },
+                                label: { type: String, enum: ["A", "B", "C"], required: true },
                                 content: { type: String, required: true }
                         },
                 ],
                 validate: {
                         validator: function(v) {
-                                if(this.questionType ==="choice") return Array.isArray(v) && v.length === 2;
+                                if(this.questionType ==="choice") return Array.isArray(v) && v.length >= 2;
                                 return true;
                         },
                         message: "선택형 문제는 정확히 2개의 보기(A/B)가 필요합니다."
@@ -35,7 +35,7 @@ const QuizSchema = new mongoose.Schema({
                 required: true,
                 validate : {
                         validator: function(val) {
-                                if(this.questionType ==="choice") return ["A","B"].includes(val);
+                                if(this.questionType ==="choice") return ["A","B","C"].includes(val);
                                 return typeof val === "string" && val.length > 0;
                         },
                         message: "정답 형식이 올바르지 않습니다."
