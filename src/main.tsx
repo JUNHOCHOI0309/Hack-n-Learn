@@ -26,6 +26,7 @@ import Archive from './pages/community/Archive';
 import CommunityPostDetailPage from './pages/CommunityPostDetailPage';
 import RankingPage from './pages/RankingPage';
 import MyPage from './pages/MyPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 import SignupPage from './pages/auth/SignupPage';
 import ChallengeResultPage from './pages/ChallengeResultPage'; // Import ChallengeResultPage
@@ -43,7 +44,14 @@ const router = createBrowserRouter([
       { index: true, element: <LandingPage /> },
       { path: 'about', element: <AboutPage /> },
       { path: 'learning', element: <LearningPageMain /> },
-      { path: 'learning/:topicId', element: <LearningPageDetail /> },
+      {
+        path: 'learning/:topicId',
+        element: (
+          <ProtectedRoute>
+            <LearningPageDetail />
+          </ProtectedRoute>
+        ),
+      },
       { path: 'learning/quiz/:topicId', element: <LearningPageQuiz /> },
       { path: 'learning/quiz-results', element: <LearningPageQuizResult /> },
       { path: 'challenge', element: <ChallengePage /> },
