@@ -7,89 +7,126 @@ import QuizProcess from '../models/quizProcess.model.js';
 import { uploadToR2, deleteFromR2 } from '../utils/uploadToR2.js';
 import mongoose from 'mongoose';
 
-export const getMyPageData = async (userId) => {
-        const uid = new mongoose.Types.ObjectId(userId);
+function calculateTier(points) {
+        if(points >= 750) return 'platinum';
+        if(points >= 500) return 'gold';
+        if(points >= 250) return 'silver';
+        return 'bronze';
+}
 
-        const profile = await User.findById(uid)
-        .select("nickname tier points createdAt lastLogin isProfileComplete profileImageUrl profileImageKey")
+export const getMyPageData = async (userId) => {
+    const uid = new mongoose.Types.ObjectId(userId);
+
+    // 사용자 프로필 조회
+    const profile = await User.findById(uid)
+        .select("nickname tier titles points createdAt lastLogin isProfileComplete profileImageUrl profileImageKey")
         .lean();
 
-        const personal = await ProblemPersonal.find({ user: uid })
+    // 최근 실전 문제 로그
+    const personal = await ProblemPersonal.find({ user: uid })
         .sort({ solvedAt: -1 })
         .limit(100)
         .lean();
 
-        const problemIds = [ ...new Set(personal.map(p => p.problem.toString())) ];
-
-        const problems = await Problem.find({ _id: { $in: problemIds } })
+    // 실전 문제 원본 조회
+    const problemIds = [...new Set(personal.map(p => p.problem.toString()))];
+    const problems = await Problem.find({ _id: { $in: problemIds } })
         .select("slug score answerRate isActive")
         .lean();
 
-        const problemMap = new Map(problems.map(p => [p._id.toString(), p]));
+    // 🔥 티어 업데이트
+    const newTier = calculateTier(profile.points);
+    if (profile.tier !== newTier) {
+        await User.findByIdAndUpdate(uid, { tier: newTier });
+        profile.tier = newTier; // 응답 데이터 반영
+    }
 
-        const practiceList = personal.map((p) => ({
-                ...p,
-                problem: problemMap.get(p.problem.toString()) || null,
-        }));
+    // 🔥 퀴즈 전체 진행률 계산
+    const quizProgress = await getQuizProgressForUser(uid);
 
-        const total = personal.length;
-        const successCount = personal.filter(p => p.result === 'success').length;
-        const successRate = total === 0 ? 0 : Math.round((successCount / total) * 100);
+    // 🔥 마스터 칭호 계산
+    const masteredTitles = quizProgress.parts
+        .filter(part => part.totalCount > 0 && part.solvedCount === part.totalCount)
+        .map(part => `${part.slug} 마스터`);
 
-        const typeStats = await ProblemPersonal.aggregate([
-                { $match: { user: uid } },
-                {
-                        $lookup: {
-                                from : 'problems',
-                                localField : 'problem',
-                                foreignField : '_id',
-                                as : 'problem',
-                        },
-                },
-                { $unwind: '$problem' },
-                {
-                        $group: {
-                                _id: '$problem.slug',
-                                total: { $sum: 1 },
-                                successCount: {
-                                        $sum: { $cond: [ { $eq: ['$result', 'success'] }, 1, 0 ] }
-                                },
-                        },
-                },
-                {
-                        $project: {
-                                _id: 0,
-                                type: '$_id',
-                                total: 1,
-                                successCount: 1,
-                                progress: {
-                                        $round : [
-                                                {
-                                                        $multiply: [
-                                                                { $divide: ['$successCount', '$total'] },
-                                                                100
-                                                        ],
-                                                },
-                                                2,
-                                        ],
-                                },
-                        },
-                },
-        ]);
+    // 🔥 기존 titles 유지 + 새 칭호만 추가
+    if (masteredTitles.length > 0) {
+        await User.findByIdAndUpdate(uid, {
+            $addToSet: { titles: { $each: masteredTitles } }
+        });
+    }
 
-        const quizProgress = await getQuizProgressForUser(uid);
+    // 프로필 응답 값에 반영 (기존 titles + 신규 titles)
+    profile.titles = Array.from(new Set([...(profile.titles ?? []), ...masteredTitles]));
 
-        return { 
-                profile, 
-                practice : {
-                total,
-                successCount,
-                successRate,
-                typeStats,
-                practiceList,
+    // 실전 문제 정보 매핑
+    const problemMap = new Map(problems.map(p => [p._id.toString(), p]));
+
+    const practiceList = personal.map((p) => ({
+        ...p,
+        problem: problemMap.get(p.problem.toString()) || null,
+    }));
+
+    // 실전 통계
+    const total = personal.length;
+    const successCount = personal.filter(p => p.result === "success").length;
+    const successRate = total === 0 ? 0 : Math.round((successCount / total) * 100);
+
+    const typeStats = await ProblemPersonal.aggregate([
+        { $match: { user: uid } },
+        {
+            $lookup: {
+                from: "problems",
+                localField: "problem",
+                foreignField: "_id",
+                as: "problem",
+            },
         },
-         quizProgress
-        } };
+        { $unwind: "$problem" },
+        {
+            $group: {
+                _id: "$problem.slug",
+                total: { $sum: 1 },
+                successCount: {
+                    $sum: { $cond: [{ $eq: ["$result", "success"] }, 1, 0] }
+                },
+            },
+        },
+        {
+            $project: {
+                _id: 0,
+                type: "$_id",
+                total: 1,
+                successCount: 1,
+                progress: {
+                    $round: [
+                        {
+                            $multiply: [
+                                { $divide: ["$successCount", "$total"] },
+                                100
+                            ],
+                        },
+                        2,
+                    ],
+                },
+            },
+        },
+    ]);
+
+    // 최종 반환
+    return {
+        profile,
+        practice: {
+            total,
+            successCount,
+            successRate,
+            typeStats,
+            practiceList,
+        },
+        quizProgress,
+    };
+};
+
 
 const getQuizProgressForUser = async (userId) => {
         const technique = await Technique.find({})
