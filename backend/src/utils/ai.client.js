@@ -170,7 +170,7 @@ export async function analyzeAnswersBatch({
                                                 model,
                                                 messages,
                                                 temperature: 1,
-                                                max_completion_tokens : 500,
+                                                max_completion_tokens : 800,
                                                 response_format: { type: "json_object" },
                                         },{ signal: controller.signal });
                                         text = String(r.choices?.[0]?.message?.content ?? "");
