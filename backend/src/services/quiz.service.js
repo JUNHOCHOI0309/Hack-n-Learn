@@ -79,6 +79,10 @@ export async function checkAnswerAndAward({ userId, quizId, userAnswer }){
                 correct = normUser === normCorrect;
         }
 
+        const existingProcess = await QuizProcess.findOne({ userId, quizId: quiz._id });
+
+        const alreadySolvedBefore = existingProcess?.status === 'solved';
+
         //진행상황에 기록
         try {
                 await QuizProcess.findOneAndUpdate(
@@ -118,16 +122,20 @@ export async function checkAnswerAndAward({ userId, quizId, userAnswer }){
         //정답 시 포인트 지급
         let totalPoints = undefined;
         let earned = 0;
-        if(correct && UserModel){
-                earned = CORRECT_SCORE;
-                const updated = await UserModel.findByIdAndUpdate(
-                        userId,
-                        { $inc: { points: CORRECT_SCORE } },
-                        { new: true }
-                ).select("points").lean();
-                totalPoints = updated?.points;
-        } else if(correct){
-                earned = CORRECT_SCORE;
+        if(correct){
+                if(alreadySolvedBefore){
+                        earned = 0;
+                } else {
+                        earned = CORRECT_SCORE;
+                        if(UserModel){
+                                const updated = await UserModel.findByIdAndUpdate(
+                                        userId,
+                                        { $inc: { points: CORRECT_SCORE } },
+                                        { new: true }
+                                ).select("points").lean();
+                                totalPoints = updated?.points;
+                        }
+                }
         }
 
         return {
