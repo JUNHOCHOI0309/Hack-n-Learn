@@ -1,6 +1,6 @@
 // src/pages/ProblemPage.tsx
 
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useBlocker } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import type { Problem, UserAnswer } from '../types/quiz'; // Import UserAnswer type
 
@@ -24,6 +24,26 @@ export default function LearningPageQuiz() {
   const [previouslySolvedIds, setPreviouslySolvedIds] = useState<Set<string>>(
     new Set()
   );
+
+  // Block navigation if user has started answering but not finishing
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      allUserAnswers.length > 0 &&
+      nextLocation.pathname !== '/learning/quiz-results'
+  );
+
+  useEffect(() => {
+    if (blocker.state === 'blocked') {
+      const confirm = window.confirm(
+        '페이지를 이동하시겠습니까? 이동 시 현재 퀴즈 진행 상황과 획득한 점수가 초기화됩니다.'
+      );
+      if (confirm) {
+        blocker.proceed();
+      } else {
+        blocker.reset();
+      }
+    }
+  }, [blocker]);
 
   useEffect(() => {
     const fetchQuizProblems = async () => {
