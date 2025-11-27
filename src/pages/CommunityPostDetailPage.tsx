@@ -12,7 +12,6 @@ interface Post {
   summary: string;
   imageUrl: string;
   content: string;
-  views: number;
 }
 
 export default function CommunityPostDetailPage() {
@@ -36,9 +35,11 @@ export default function CommunityPostDetailPage() {
           author: fetchedPost.writer || 'Unknown', // Map 'writer' from API to 'author', default to 'Unknown'
           date: fetchedPost.date || '', // Default to empty string if missing
           summary: fetchedPost.summary || '',
-          imageUrl: (fetchedPost.images && fetchedPost.images.length > 0) ? fetchedPost.images[0] : '', // Map first image from 'images' array to 'imageUrl'
+          imageUrl:
+            fetchedPost.images && fetchedPost.images.length > 0
+              ? fetchedPost.images[0]
+              : '', // Map first image from 'images' array to 'imageUrl'
           content: fetchedPost.content || '',
-          views: fetchedPost.views || 0,
         });
       } catch (err) {
         setError('Failed to fetch post.');

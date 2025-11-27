@@ -7,8 +7,9 @@ import { useCommunityPage } from '../../components/community/useCommunityPage';
 
 interface PostItem {
   id: number;
+  _id?: string;
   title: string;
-  author: string;
+  author: string | { username?: string; name?: string; nickname?: string; _id: string };
   date: string;
   views: number;
 }
@@ -50,7 +51,7 @@ export default function QnaBoard() {
     fetchPosts();
   }, [currentPage, setTotalPages, pageSize]);
 
-  const handleRowClick = (id: number) => {
+  const handleRowClick = (id: number | string) => {
     navigate(`/community/qna/${id}`);
   };
 
@@ -61,6 +62,11 @@ export default function QnaBoard() {
   if (error) {
     return <div className="text-center p-20 text-red-500">{error}</div>;
   }
+
+  const renderAuthor = (author: PostItem['author']) => {
+    if (typeof author === 'string') return author;
+    return author.username || author.name || author.nickname || 'Unknown';
+  };
 
   return (
     <div className="p-8 text-primary-text">
@@ -85,13 +91,13 @@ export default function QnaBoard() {
         <tbody>
           {posts.map((post) => (
             <tr
-              key={post.id}
+              key={post.id || post._id}
               className="border-b border-edge hover:bg-card-background cursor-pointer"
-              onClick={() => handleRowClick(post.id)}
+              onClick={() => handleRowClick(post.id || post._id!)}
             >
-              <td className="p-4">{post.id}</td>
+              <td className="p-4">{post.id || post._id?.slice(-4)}</td>
               <td className="p-4">{post.title}</td>
-              <td className="p-4">{post.author}</td>
+              <td className="p-4">{renderAuthor(post.author)}</td>
               <td className="p-4">{post.date}</td>
               <td className="p-4">{post.views}</td>
             </tr>

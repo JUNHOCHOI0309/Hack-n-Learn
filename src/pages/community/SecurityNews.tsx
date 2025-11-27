@@ -20,12 +20,15 @@ export default function SecurityNews() {
   const context = useCommunityPage();
   const currentPage = context?.currentPage || 1;
   const setTotalPages = context?.setTotalPages;
+  const handlePageChange = context?.handlePageChange;
   const pageSize = 8;
 
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<string | null>(null); // State for sorting
+  const [sortBy, setSortBy] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchKeyword, setSearchKeyword] = useState('');
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -36,7 +39,8 @@ export default function SecurityNews() {
           params: {
             page: currentPage,
             limit: pageSize,
-            ...(sortBy && { sortBy }), // Conditionally add sortBy parameter
+            ...(sortBy && { sortBy }),
+            ...(searchKeyword && { keyword: searchKeyword }),
           },
         });
         setNews(response.data.data.items);
@@ -52,14 +56,27 @@ export default function SecurityNews() {
     };
 
     fetchNews();
-  }, [currentPage, setTotalPages, pageSize, sortBy]); // Add sortBy to dependencies
+  }, [currentPage, setTotalPages, pageSize, sortBy, searchKeyword]);
 
   const handlePostClick = (id: string) => {
     navigate(`/community/${id}`);
   };
 
   const handleSortByLatest = () => {
-    setSortBy('latest'); // Set sortBy to 'latest'
+    setSortBy('latest');
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setSearchKeyword(searchTerm);
+      if (handlePageChange) {
+        handlePageChange(1);
+      }
+    }
   };
 
   if (loading) {
@@ -74,7 +91,12 @@ export default function SecurityNews() {
     <>
       {/* Search Bar */}
       <div className="p-20 mb-10">
-        <Input placeholder="재미있는 이슈가 있나요?" />
+        <Input
+          placeholder="재미있는 이슈가 있나요?"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          onKeyDown={handleSearchKeyDown}
+        />
       </div>
 
       {/* Sort Options */}
