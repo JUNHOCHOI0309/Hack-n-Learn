@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import { useAuthStore } from '../../store/authStore';
 
 const POST_TYPES = [
   { id: '692212bf9791aa282263d57d', label: '자유' },
@@ -12,11 +13,31 @@ const POST_TYPES = [
 
 export default function CreatePostPage() {
   const navigate = useNavigate();
+  const { user, isAuthenticated, isLoading } = useAuthStore();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [type, setType] = useState(POST_TYPES[1].id); // Default to '질문'
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      navigate('/login'); // Redirect to login page
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
+  if (isLoading) {
+    return <div className="text-center p-20">Loading user data...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="text-center p-20">
+        You must be logged in to create a post. Redirecting to login...
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,12 +49,17 @@ export default function CreatePostPage() {
         title,
         content,
         type,
+        nickname: user?.nickname,
       });
       alert('게시글이 성공적으로 작성되었습니다.');
       navigate('/community/qna');
-    } catch (err) {
-      setError('게시글 작성에 실패했습니다.');
-      console.error(err);
+    } catch (err: any) {
+      console.error('게시글 작성 실패:', err.response?.data || err.message);
+      setError(
+        '게시글 작성에 실패했습니다. (' +
+          (err.response?.data?.message || 'Server Error') +
+          ')'
+      );
     } finally {
       setLoading(false);
     }

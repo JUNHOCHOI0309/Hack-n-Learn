@@ -5,6 +5,7 @@ import { useCommunityPage } from '../../components/community/useCommunityPage';
 import type { Post } from '../../types/community';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import { communityService } from '../../services/communityService';
 
 export default function QnaBoard() {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ export default function QnaBoard() {
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'latest' | 'views'>('latest');
   const [totalCount, setTotalCount] = useState(0);
+  const [viewedPosts, setViewedPosts] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -30,12 +32,26 @@ export default function QnaBoard() {
             sort: sortBy,
           },
         });
-        setPosts(response.data.data.items);
+        const fetchedPosts: Post[] = response.data.data.items;
+        setPosts(fetchedPosts);
         setTotalCount(response.data.data.total);
         console.log(response.data.data.items);
         if (setTotalPages) {
           setTotalPages(Math.ceil(response.data.data.total / pageSize));
         }
+
+        // Fetch viewed status for each post
+        const viewedStatusPromises = fetchedPosts.map(async (post) => {
+          const viewed = await communityService.checkPostViewed(post._id);
+          return { postId: post._id, viewed };
+        });
+
+        const statuses = await Promise.all(viewedStatusPromises);
+        const newViewedPosts = statuses.reduce((acc, { postId, viewed }) => {
+          acc[postId] = viewed;
+          return acc;
+        }, {} as Record<string, boolean>);
+        setViewedPosts(newViewedPosts);
       } catch (err) {
         setError('Failed to fetch posts.');
         console.error(err);
@@ -59,7 +75,7 @@ export default function QnaBoard() {
   const renderAuthor = (author: Post['author']) => {
     if (typeof author === 'string') return author;
 
-    return author.username || 'Unknown'; // Simplified, assuming username is primary for display
+    return author.nickname || 'Unknown'; // Simplified, assuming username is primary for display
   };
 
   return (
@@ -120,7 +136,15 @@ export default function QnaBoard() {
               <td className="p-4">
                 {totalCount - ((currentPage - 1) * pageSize + index)}
               </td>
-              <td className="p-4">{post.title}</td>
+              <td
+                className={`p-4 ${
+                  viewedPosts[post._id]
+                    ? 'text-secondary-text'
+                    : 'text-primary-text'
+                }`}
+              >
+                {post.title}
+              </td>
               <td className="p-4">{renderAuthor(post.author)}</td>
               <td className="p-4">
                 {new Date(post.createdAt).toLocaleDateString()}

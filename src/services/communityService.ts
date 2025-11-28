@@ -1,5 +1,10 @@
 import axios from 'axios';
-import type { PaginatedPosts, Comment, CreateCommentPayload, CreateReplyPayload } from '../types/community';
+import type {
+  PaginatedPosts,
+  Comment,
+  CreateCommentPayload,
+  CreateReplyPayload,
+} from '../types/community';
 
 const API_URL = '/api/community';
 
@@ -11,24 +16,27 @@ export const communityService = {
     keyword?: string
   ): Promise<PaginatedPosts> => {
     try {
-      const response = await axios.get<{ success: boolean; data: PaginatedPosts }>(
-        `${API_URL}/posts`,
-        {
-          params: {
-            page,
-            limit,
-            ...(type && { type }),
-            ...(keyword && { keyword }),
-          },
-        }
-      );
+      const response = await axios.get<{
+        success: boolean;
+        data: PaginatedPosts;
+      }>(`${API_URL}/posts`, {
+        params: {
+          page,
+          limit,
+          ...(type && { type }),
+          ...(keyword && { keyword }),
+        },
+      });
       return response.data.data;
     } catch (error) {
       console.error('Error fetching community posts:', error);
       throw error;
     }
   },
-  addComment: async (postId: string, payload: CreateCommentPayload): Promise<Comment> => {
+  addComment: async (
+    postId: string,
+    payload: CreateCommentPayload
+  ): Promise<Comment> => {
     try {
       const response = await axios.post<{ success: boolean; data: Comment }>(
         `${API_URL}/posts/${postId}/comments`,
@@ -80,6 +88,17 @@ export const communityService = {
     } catch (error) {
       console.error(`Error deleting comment ${commentId}:`, error);
       throw error;
+    }
+  },
+  checkPostViewed: async (postId: string): Promise<boolean> => {
+    try {
+      const response = await axios.get<{ success: boolean; viewed: boolean }>(
+        `${API_URL}/posts/${postId}/viewed`
+      );
+      return response.data.viewed;
+    } catch (error) {
+      console.error(`Error checking viewed status for post ${postId}:`, error);
+      return false; // Assume not viewed on error
     }
   },
 };

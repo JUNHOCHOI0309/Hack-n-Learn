@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import { useAuthStore } from '../../store/authStore';
 import type { Post } from '../../types/community';
 
 const POST_TYPES = [
@@ -14,6 +15,7 @@ const POST_TYPES = [
 export default function EditPostPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [type, setType] = useState(POST_TYPES[1].id); // Default to '질문'
@@ -62,12 +64,17 @@ export default function EditPostPage() {
         title,
         content,
         type,
+        nickname: user?.nickname,
       });
       alert('게시글이 성공적으로 수정되었습니다.');
       navigate(`/community/qna/${id}`);
-    } catch (err) {
-      setError('게시글 수정에 실패했습니다.');
-      console.error(err);
+    } catch (err: any) {
+      console.error('게시글 수정 실패:', err.response?.data || err.message);
+      setError(
+        '게시글 수정에 실패했습니다. (' +
+          (err.response?.data?.message || 'Server Error') +
+          ')'
+      );
     } finally {
       setLoading(false);
     }
