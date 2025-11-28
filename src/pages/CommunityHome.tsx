@@ -68,7 +68,8 @@ export default function CommunityHome() {
         <div className="max-w-[1440px] mx-auto px-10">
           <Outlet context={{ currentPage, handlePageChange, setTotalPages }} />
 
-          {location.pathname === '/community' && (
+          {(location.pathname === '/community' ||
+            location.pathname === '/community/qna') && (
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

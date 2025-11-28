@@ -1,5 +1,4 @@
-import { ChevronDown } from 'lucide-react';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Input from '../../components/Input';
@@ -25,24 +24,6 @@ export default function SecurityNews() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // 드롭다운 메뉴 상태 관리
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // 외부 클릭 감지하여 드롭다운 닫기
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   // 뉴스 데이터 가져오기
   useEffect(() => {
@@ -91,33 +72,17 @@ export default function SecurityNews() {
         <Input placeholder="재미있는 이슈가 있나요?" />
       </div>
 
-      {/* Sort Options (Dropdown) */}
-      <div
-        className="flex justify-end items-center mb-6 relative"
-        ref={dropdownRef}
-      >
-        <button
-          className="flex items-center gap-2 text-primary-text px-4 py-2 hover:bg-card-background rounded-md transition-colors"
-          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        >
-          <ChevronDown
-            className={`w-5 h-5 transition-transform ${
-              isDropdownOpen ? 'rotate-180' : ''
-            }`}
+      {/* Posts Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        {news.map((post) => (
+          <PostCard
+            key={post.id}
+            imageUrl={post.image}
+            title={post.title}
+            date={post.date} // 날짜 포맷팅 적용
+            onClick={() => handlePostClick(post.id)}
           />
-        </button>
-        {/* Posts Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {news.map((post) => (
-            <PostCard
-              key={post.id}
-              imageUrl={post.image}
-              title={post.title}
-              date={post.date} // 날짜 포맷팅 적용
-              onClick={() => handlePostClick(post.id)}
-            />
-          ))}
-        </div>
+        ))}
       </div>
     </>
   );
