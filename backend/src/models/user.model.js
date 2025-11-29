@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
                 }
         },
         role : { type: String, enum: ['user', 'admin'], default: 'user' },
-        tier : { type: String, enum: ['bronze', 'silver', 'gold', 'platinum'], default: 'bronze' },
+        tier : { type: String, enum: ['bronze', 'silver', 'gold', 'platinum','diamond'], default: 'bronze' },
         titles : { type: [String], default: [] }, // 사용자가 획득한 타이틀 목록
         points : { type: Number, default: 0 },
         createdAt : { type: Date, default: Date.now },
