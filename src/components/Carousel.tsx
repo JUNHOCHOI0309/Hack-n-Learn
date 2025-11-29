@@ -12,6 +12,7 @@ export interface CarouselItem {
   description: string;
   id: number;
   icon: React.ReactNode;
+  slug?: string;
 }
 
 export interface CarouselProps {
@@ -22,6 +23,7 @@ export interface CarouselProps {
   pauseOnHover?: boolean;
   loop?: boolean;
   round?: boolean;
+  onItemClick?: (item: CarouselItem) => void;
 }
 
 const DEFAULT_ITEMS: CarouselItem[] = [
@@ -70,6 +72,7 @@ export default function Carousel({
   pauseOnHover = false,
   loop = false,
   round = false,
+  onItemClick,
 }: CarouselProps): JSX.Element {
   const containerPadding = 16;
   const itemWidth = baseWidth - containerPadding * 2;
@@ -216,6 +219,7 @@ export default function Carousel({
                 ...(round && { borderRadius: '50%' }),
               }}
               transition={effectiveTransition}
+              onClick={() => onItemClick && onItemClick(item)}
             >
               <div className={`${round ? 'p-0 m-0' : 'mb-4 p-5'}`}>
                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#060010]">

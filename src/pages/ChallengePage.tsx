@@ -5,10 +5,12 @@ import Carousel, { type CarouselItem } from '../components/Carousel';
 import { useProblemStore } from '../store/problemStore';
 import { CheckCircle, XCircle, AlertCircle, Lock } from 'lucide-react';
 import Squares from '../components/Squares'; // Squares 컴포넌트 import
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const ChallengePage: React.FC = () => {
   const { problemProgress, isLoading, error, fetchProblemProgress } =
     useProblemStore();
+  const navigate = useNavigate(); // Initialize useNavigate
 
   useEffect(() => {
     fetchProblemProgress();
@@ -62,9 +64,16 @@ const ChallengePage: React.FC = () => {
         title: problem.title,
         description: `Difficulty: ${difficultyEmoji} | Answer Rate: ${problem.answerRate}% | Status: ${statusText}`,
         icon: icon,
+        slug: problem.slug, // Pass slug
       };
     });
   }, [problemProgress]);
+
+  const handleItemClick = (item: CarouselItem) => {
+    if (item.slug) {
+      navigate(`/challenge/${item.slug}`);
+    }
+  };
 
   return (
     <>
@@ -81,7 +90,7 @@ const ChallengePage: React.FC = () => {
             speed={0.5}
             squareSize={40}
             direction="diagonal"
-            borderColor="#555" // 어두운 테마에 맞는 격자 색상
+            borderColor="#a0a0a0" // css의 edge색상 (--color-edge)
             hoverFillColor="#222" // 호버 시 채워질 색상
           />
         </div>
@@ -117,6 +126,7 @@ const ChallengePage: React.FC = () => {
                   autoplay={false}
                   loop={false}
                   round={true}
+                  onItemClick={handleItemClick} // Pass handler
                 />
               </div>
             ) : (
