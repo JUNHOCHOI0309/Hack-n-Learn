@@ -8,9 +8,21 @@ import Button from '../components/Button';
 const CORRECT_FLAG = 'test_flag'; // Define CORRECT_FLAG for testing
 
 const hintDatabase: HintData[] = [
-  { level: 1, text: 'SQL Injection은 사용자의 입력값이 쿼리의 일부로 사용될 때 발생할 수 있습니다.', cost: 5 },
-  { level: 2, text: '로그인 폼에서 아이디와 비밀번호 입력 필드를 조작하여 쿼리 구조를 변경해보세요.', cost: 10 },
-  { level: 3, text: "' OR '1'='1' -- 와 같은 구문을 사용하여 인증을 우회할 수 있습니다.", cost: 15 },
+  {
+    level: 1,
+    text: 'SQL Injection은 사용자의 입력값이 쿼리의 일부로 사용될 때 발생할 수 있습니다.',
+    cost: 5,
+  },
+  {
+    level: 2,
+    text: '로그인 폼에서 아이디와 비밀번호 입력 필드를 조작하여 쿼리 구조를 변경해보세요.',
+    cost: 10,
+  },
+  {
+    level: 3,
+    text: "' OR '1'='1' -- 와 같은 구문을 사용하여 인증을 우회할 수 있습니다.",
+    cost: 15,
+  },
 ];
 
 export default function ChallengeDetailPage() {
@@ -159,14 +171,14 @@ export default function ChallengeDetailPage() {
         <section className="space-y-4">
           {/* 타겟 URL 입력창 (Disabled) */}
           <div className="flex items-center bg-code-bg border border-edge rounded-[10px] overflow-hidden">
-            <span className="pl-5 pr-3 text-primary-text flex-shrink-0">
+            <span className="pl-5 pr-3 text-primary-text shrink-0">
               타겟 URL:
             </span>
             <input
               type="text"
               value="http://abc.challenge.com/login.php"
               disabled
-              className="flex-grow bg-transparent py-2 pr-5 text-secondary-text outline-none whitespace-nowrap overflow-x-auto"
+              className="grow bg-transparent py-2 pr-5 text-secondary-text outline-none whitespace-nowrap overflow-x-auto"
             />
           </div>
 
