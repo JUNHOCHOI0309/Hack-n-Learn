@@ -38,6 +38,9 @@ export default function LandingPage() {
         style={{ width: '100%', height: '100vh', position: 'relative' }}
         className="bg-black pointer-events-auto"
       >
+        <div className="absolute right-6 top-6 z-20 rounded-full border border-[#B19EEF]/60 bg-black/60 px-4 py-2 text-xs font-semibold tracking-[0.18em] text-[#B19EEF] backdrop-blur">
+          PORTFOLIO ARCHIVE · FRONTEND DEMO
+        </div>
         <PixelBlast
           pixelSize={6}
           color="#B19EEF"

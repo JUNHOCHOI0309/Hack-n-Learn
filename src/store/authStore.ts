@@ -1,8 +1,6 @@
 import { create } from 'zustand';
 import axios from 'axios';
-
-
-
+import { isPortfolioMode } from '../config/runtime';
 interface User {
   id: string;
   username: string;
@@ -27,7 +25,7 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   user: null,
-  isLoading: true, // Start as true to indicate initial loading of auth status
+  isLoading: !isPortfolioMode,
 
     addPoints: (amount: number) => {
       set((state) => ({
@@ -95,6 +93,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     },
   
     checkAuthStatus: async () => {
+      if (isPortfolioMode) {
+        set({ isAuthenticated: false, user: null, isLoading: false });
+        return;
+      }
+
       set({ isLoading: true });
       try {
         const response = await axios.get('/api/auth/me', { withCredentials: true });

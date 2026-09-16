@@ -6,6 +6,7 @@ import HeroSection from '../components/HeroSection';
 import Button from '../components/Button';
 import CodeDisplay from '../components/CodeDisplay';
 import WarningMessage from '../components/WarningMessage';
+import { isPortfolioMode } from '../config/runtime';
 
 export default function LearningPageDetail() {
   const { topicId } = useParams<{ topicId: string }>();
@@ -256,9 +257,14 @@ export default function LearningPageDetail() {
           <Button
             variant="primary"
             className="w-72 h-12 text-xl font-semibold rounded-[20px]"
-            onClick={() => navigate(`/learning/quiz/${topic.id}`)}
+            disabled={isPortfolioMode}
+            onClick={
+              isPortfolioMode
+                ? undefined
+                : () => navigate(`/learning/quiz/${topic.id}`)
+            }
           >
-            퀴즈 풀러가기
+            {isPortfolioMode ? '퀴즈 기능은 운영 종료되었습니다' : '퀴즈 풀러가기'}
           </Button>
         </div>
       </div>

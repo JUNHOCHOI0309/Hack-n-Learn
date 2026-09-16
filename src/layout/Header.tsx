@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import logo from '../assets/images/logo.png';
 import { useAuthStore } from '../store/authStore';
 import GooeyNav from '@/components/GooeyNav';
+import { isPortfolioMode } from '../config/runtime';
 
 export default function Header() {
   const location = useLocation();
@@ -14,7 +15,11 @@ export default function Header() {
     { name: '실전 문제', path: '/challenge' },
     { name: '커뮤니티', path: '/community' },
     { name: '랭킹', path: '/ranking' },
-  ];
+  ].filter((link) =>
+    isPortfolioMode
+      ? link.path === '/about' || link.path === '/learning'
+      : true
+  );
 
   const handleLogout = async () => {
     await logout();
@@ -50,7 +55,11 @@ export default function Header() {
         </div>
 
         <div className="flex items-center space-x-4 text-primary-text">
-          {isAuthenticated ? (
+          {isPortfolioMode ? (
+            <span className="rounded-full border border-accent-primary1/60 bg-accent-primary1/10 px-3 py-1 text-xs font-semibold tracking-wider text-accent-primary1">
+              PORTFOLIO · READ ONLY
+            </span>
+          ) : isAuthenticated ? (
             <>
               <Bell />
 

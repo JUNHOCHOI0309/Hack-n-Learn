@@ -53,7 +53,7 @@ const router = createBrowserRouter([
       {
         path: 'learning/:topicId',
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowPortfolio>
             <LearningPageDetail />
           </ProtectedRoute>
         ),

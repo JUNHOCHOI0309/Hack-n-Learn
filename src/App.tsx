@@ -7,6 +7,7 @@ import { useAuthStore } from './store/authStore';
 import Toast from './components/Toast';
 
 import Spinner from './components/Spinner';
+import { isPortfolioMode } from './config/runtime';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -64,7 +65,7 @@ export default function App() {
       <ScrollToTop />
       {!hideHeaderFooter && <Header />}
       <Outlet />
-      {!hideAIChatBot && (
+      {!isPortfolioMode && !hideAIChatBot && (
         <div className="fixed bottom-8 right-8 z-50">
           <AIChatBot />
         </div>
